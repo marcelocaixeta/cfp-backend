@@ -1,0 +1,52 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    container_name: bitcoin_backend
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+      - composer_cache:/tmp/composer-cache
+    ports:
+      - "8000:8000"
+    environment:
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      FRONTEND_URL: http://localhost:3000,http://localhost:5173
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: bitcoin_backend
+      DB_USERNAME: bitcoin
+      DB_PASSWORD: bitcoin
+      QUEUE_CONNECTION: database
+      CACHE_STORE: database
+      SESSION_DRIVER: database
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: bitcoin_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: bitcoin_backend
+      POSTGRES_USER: bitcoin
+      POSTGRES_PASSWORD: bitcoin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bitcoin -d bitcoin_backend"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  composer_cache:
+  postgres_data:

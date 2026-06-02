@@ -1,0 +1,48 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+/auth.json
+/storage/*.key
+
+# Dependencies
+/node_modules
+/vendor
+
+# Build artifacts
+/public/build
+/public/fonts-manifest.dev.json
+/public/hot
+/public/storage
+
+# Runtime data
+*.log
+/storage/pail
+
+# Local databases
+/database/*.sqlite
+/database/*.sqlite3
+
+# Tests and coverage
+.phpunit.result.cache
+/.phpunit.cache
+/coverage
+
+# IDEs and local tooling
+/.agents
+/.codex
+/.cursor
+/.idea
+/.nova
+/.vscode
+/.zed
+.phpactor.json
+_ide_helper.php
+
+# Local virtual machines
+Homestead.json
+Homestead.yaml
