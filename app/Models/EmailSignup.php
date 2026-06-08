@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\UsesPortugueseColumns;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['email', 'source', 'ip_address', 'user_agent'])]
+#[Fillable(['email', 'origem', 'endereco_ip', 'agente_usuario'])]
 class EmailSignup extends Model
 {
-    use HasFactory;
+    use HasFactory, UsesPortugueseColumns;
+
+    protected $table = 'inscricoes_email';
 }

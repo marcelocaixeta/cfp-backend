@@ -13,15 +13,15 @@ class EmailSignupController extends Controller
     {
         $data = $request->validate([
             'email' => ['required', 'email', 'max:255'],
-            'source' => ['nullable', 'string', 'max:100'],
+            'origem' => ['nullable', 'string', 'max:100'],
         ]);
 
         $signup = EmailSignup::updateOrCreate(
             ['email' => mb_strtolower($data['email'])],
             [
-                'source' => $data['source'] ?? 'registration-popup',
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
+                'origem' => $data['origem'] ?? 'registration-popup',
+                'endereco_ip' => $request->ip(),
+                'agente_usuario' => $request->userAgent(),
             ],
         );
 
@@ -29,7 +29,7 @@ class EmailSignupController extends Controller
             'data' => [
                 'id' => $signup->id,
                 'email' => $signup->email,
-                'source' => $signup->source,
+                'origem' => $signup->origem,
             ],
         ], $signup->wasRecentlyCreated ? 201 : 200);
     }

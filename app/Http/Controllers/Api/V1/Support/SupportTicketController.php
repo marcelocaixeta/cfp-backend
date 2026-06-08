@@ -20,22 +20,22 @@ class SupportTicketController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'subject' => ['required', 'string', 'max:255'],
-            'category' => ['nullable', 'string', 'max:255'],
-            'priority' => ['sometimes', Rule::in(['low', 'normal', 'high'])],
-            'message' => ['required', 'string'],
+            'assunto' => ['required', 'string', 'max:255'],
+            'categoria' => ['nullable', 'string', 'max:255'],
+            'prioridade' => ['sometimes', Rule::in(['low', 'normal', 'high'])],
+            'mensagem' => ['required', 'string'],
         ]);
 
         $ticket = $request->user()->supportTickets()->create([
-            'subject' => $data['subject'],
-            'category' => $data['category'] ?? null,
-            'priority' => $data['priority'] ?? 'normal',
-            'status' => 'open',
+            'assunto' => $data['assunto'],
+            'categoria' => $data['categoria'] ?? null,
+            'prioridade' => $data['prioridade'] ?? 'normal',
+            'situacao' => 'open',
         ]);
 
         $ticket->messages()->create([
-            'user_id' => $request->user()->id,
-            'message' => $data['message'],
+            'usuario_id' => $request->user()->id,
+            'mensagem' => $data['mensagem'],
         ]);
 
         return response()->json(['data' => $ticket->load('messages')], 201);
@@ -53,10 +53,10 @@ class SupportTicketController extends Controller
         $this->authorizeOwner($request, $supportTicket);
 
         $supportTicket->update($request->validate([
-            'subject' => ['sometimes', 'required', 'string', 'max:255'],
-            'category' => ['nullable', 'string', 'max:255'],
-            'priority' => ['sometimes', Rule::in(['low', 'normal', 'high'])],
-            'status' => ['sometimes', Rule::in(['open', 'waiting_user', 'waiting_support', 'resolved', 'closed'])],
+            'assunto' => ['sometimes', 'required', 'string', 'max:255'],
+            'categoria' => ['nullable', 'string', 'max:255'],
+            'prioridade' => ['sometimes', Rule::in(['low', 'normal', 'high'])],
+            'situacao' => ['sometimes', Rule::in(['open', 'waiting_user', 'waiting_support', 'resolved', 'closed'])],
         ]));
 
         return response()->json(['data' => $supportTicket->refresh()]);
@@ -72,6 +72,6 @@ class SupportTicketController extends Controller
 
     private function authorizeOwner(Request $request, SupportTicket $ticket): void
     {
-        abort_unless($ticket->user_id === $request->user()->id, 404);
+        abort_unless($ticket->usuario_id === $request->user()->id, 404);
     }
 }

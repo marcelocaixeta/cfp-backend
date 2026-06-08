@@ -51,18 +51,18 @@ class CreditCardController extends Controller
         $required = $partial ? 'sometimes' : 'required';
 
         return $request->validate([
-            'name' => [$required, 'string', 'max:255'],
-            'last_four_digits' => ['nullable', 'digits:4'],
-            'brand' => ['nullable', 'string', 'max:255'],
-            'limit_amount' => ['nullable', 'numeric', 'min:0'],
-            'closing_day' => ['nullable', 'integer', 'between:1,31'],
-            'due_day' => ['nullable', 'integer', 'between:1,31'],
-            'is_active' => ['sometimes', 'boolean'],
+            'nome' => [$required, 'string', 'max:255'],
+            'ultimos_quatro_digitos' => ['nullable', 'digits:4'],
+            'bandeira' => ['nullable', 'string', 'max:255'],
+            'limite_valor' => ['nullable', 'numeric', 'min:0'],
+            'dia_fechamento' => ['nullable', 'integer', 'between:1,31'],
+            'dia_vencimento' => ['nullable', 'integer', 'between:1,31'],
+            'ativo' => ['sometimes', 'boolean'],
         ]);
     }
 
     private function authorizeOwner(Request $request, CreditCard $creditCard): void
     {
-        abort_unless($creditCard->user_id === $request->user()->id, 404);
+        abort_unless($creditCard->usuario_id === $request->user()->id, 404);
     }
 }

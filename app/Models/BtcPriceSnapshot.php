@@ -2,17 +2,22 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\UsesPortugueseColumns;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 
-#[Fillable(['provider', 'currency', 'price', 'captured_at'])]
+#[Fillable(['provedor', 'moeda', 'preco', 'capturado_em'])]
 class BtcPriceSnapshot extends Model
 {
+    use UsesPortugueseColumns;
+
+    protected $table = 'capturas_precos_btc';
+
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
-            'captured_at' => 'datetime',
+            'preco' => 'decimal:2',
+            'capturado_em' => 'datetime',
         ];
     }
 }

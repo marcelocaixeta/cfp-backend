@@ -8,18 +8,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('email_signups', function (Blueprint $table) {
+        Schema::create('inscricoes_email', function (Blueprint $table) {
             $table->id();
             $table->string('email')->unique();
-            $table->string('source')->nullable();
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->timestamps();
+            $table->string('origem')->nullable();
+            $table->string('endereco_ip', 45)->nullable();
+            $table->text('agente_usuario')->nullable();
+            $table->timestamp('criado_em')->nullable();
+            $table->timestamp('atualizado_em')->nullable();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('email_signups');
+        Schema::dropIfExists('inscricoes_email');
     }
 };

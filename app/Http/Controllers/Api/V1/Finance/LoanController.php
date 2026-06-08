@@ -25,15 +25,15 @@ class LoanController extends Controller
 
         $loan = DB::transaction(function () use ($request, $data): Loan {
             $loan = $request->user()->loans()->create($data);
-            $firstDueDate = CarbonImmutable::parse($loan->first_due_date);
+            $firstDueDate = CarbonImmutable::parse($loan->primeira_data_vencimento);
 
-            for ($number = 1; $number <= $loan->installment_count; $number++) {
+            for ($number = 1; $number <= $loan->quantidade_parcelas; $number++) {
                 $loan->installments()->create([
-                    'user_id' => $request->user()->id,
-                    'installment_number' => $number,
-                    'due_date' => $firstDueDate->addMonthsNoOverflow($number - 1),
-                    'amount' => $loan->installment_amount,
-                    'status' => 'pending',
+                    'usuario_id' => $request->user()->id,
+                    'numero_parcela' => $number,
+                    'data_vencimento' => $firstDueDate->addMonthsNoOverflow($number - 1),
+                    'valor' => $loan->valor_parcela,
+                    'situacao' => 'pending',
                 ]);
             }
 
@@ -71,21 +71,21 @@ class LoanController extends Controller
         $required = $partial ? 'sometimes' : 'required';
 
         return $request->validate([
-            'category_id' => ['nullable', 'integer', 'exists:finance_categories,id'],
-            'lender_name' => [$required, 'string', 'max:255'],
-            'description' => ['nullable', 'string', 'max:255'],
-            'principal_amount' => [$required, 'numeric', 'min:0.01'],
-            'interest_rate' => ['nullable', 'numeric', 'min:0'],
-            'interest_rate_period' => ['nullable', Rule::in(['monthly', 'yearly'])],
-            'installment_count' => [$required, 'integer', 'min:1', 'max:360'],
-            'installment_amount' => [$required, 'numeric', 'min:0.01'],
-            'first_due_date' => [$required, 'date'],
-            'status' => ['sometimes', Rule::in(['active', 'paid', 'overdue', 'canceled'])],
+            'categoria_id' => ['nullable', 'integer', 'exists:categorias_financeiras,id'],
+            'credor_nome' => [$required, 'string', 'max:255'],
+            'descricao' => ['nullable', 'string', 'max:255'],
+            'valor_principal' => [$required, 'numeric', 'min:0.01'],
+            'taxa_juros' => ['nullable', 'numeric', 'min:0'],
+            'periodo_taxa_juros' => ['nullable', Rule::in(['monthly', 'yearly'])],
+            'quantidade_parcelas' => [$required, 'integer', 'min:1', 'max:360'],
+            'valor_parcela' => [$required, 'numeric', 'min:0.01'],
+            'primeira_data_vencimento' => [$required, 'date'],
+            'situacao' => ['sometimes', Rule::in(['active', 'paid', 'overdue', 'canceled'])],
         ]);
     }
 
     private function authorizeOwner(Request $request, Loan $loan): void
     {
-        abort_unless($loan->user_id === $request->user()->id, 404);
+        abort_unless($loan->usuario_id === $request->user()->id, 404);
     }
 }

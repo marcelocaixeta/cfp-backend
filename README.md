@@ -109,7 +109,7 @@ Payload:
 ```json
 {
   "email": "usuario@email.com",
-  "source": "registration-popup"
+  "origem": "registration-popup"
 }
 ```
 
@@ -120,7 +120,7 @@ Resposta:
   "data": {
     "id": 1,
     "email": "usuario@email.com",
-    "source": "registration-popup"
+    "origem": "registration-popup"
   }
 }
 ```

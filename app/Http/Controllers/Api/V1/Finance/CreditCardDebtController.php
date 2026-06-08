@@ -15,8 +15,8 @@ class CreditCardDebtController extends Controller
     {
         $query = $request->user()->creditCardDebts()->with('creditCard')->latest();
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->string('status'));
+        if ($request->filled('situacao')) {
+            $query->where('situacao', $request->string('situacao'));
         }
 
         return response()->json(['data' => $query->paginate()]);
@@ -25,7 +25,7 @@ class CreditCardDebtController extends Controller
     public function store(Request $request): JsonResponse
     {
         $data = $this->validated($request);
-        $this->authorizeCreditCard($request, $data['credit_card_id'] ?? null);
+        $this->authorizeCreditCard($request, $data['cartao_credito_id'] ?? null);
 
         $debt = $request->user()->creditCardDebts()->create($data);
 
@@ -43,7 +43,7 @@ class CreditCardDebtController extends Controller
     {
         $this->authorizeOwner($request, $creditCardDebt);
         $data = $this->validated($request, true);
-        $this->authorizeCreditCard($request, $data['credit_card_id'] ?? null);
+        $this->authorizeCreditCard($request, $data['cartao_credito_id'] ?? null);
         $creditCardDebt->update($data);
 
         return response()->json(['data' => $creditCardDebt->refresh()]);
@@ -62,22 +62,22 @@ class CreditCardDebtController extends Controller
         $required = $partial ? 'sometimes' : 'required';
 
         return $request->validate([
-            'credit_card_id' => ['nullable', 'integer', 'exists:credit_cards,id'],
-            'category_id' => ['nullable', 'integer', 'exists:finance_categories,id'],
-            'description' => [$required, 'string', 'max:255'],
-            'total_amount' => [$required, 'numeric', 'min:0.01'],
-            'installment_count' => [$required, 'integer', 'min:1', 'max:360'],
-            'current_installment' => ['sometimes', 'integer', 'min:1', 'max:360'],
-            'installment_amount' => [$required, 'numeric', 'min:0.01'],
-            'first_due_date' => [$required, 'date'],
-            'status' => ['sometimes', Rule::in(['pending', 'paid', 'overdue', 'canceled'])],
-            'notes' => ['nullable', 'string'],
+            'cartao_credito_id' => ['nullable', 'integer', 'exists:cartoes_credito,id'],
+            'categoria_id' => ['nullable', 'integer', 'exists:categorias_financeiras,id'],
+            'descricao' => [$required, 'string', 'max:255'],
+            'valor_total' => [$required, 'numeric', 'min:0.01'],
+            'quantidade_parcelas' => [$required, 'integer', 'min:1', 'max:360'],
+            'parcela_atual' => ['sometimes', 'integer', 'min:1', 'max:360'],
+            'valor_parcela' => [$required, 'numeric', 'min:0.01'],
+            'primeira_data_vencimento' => [$required, 'date'],
+            'situacao' => ['sometimes', Rule::in(['pending', 'paid', 'overdue', 'canceled'])],
+            'observacoes' => ['nullable', 'string'],
         ]);
     }
 
     private function authorizeOwner(Request $request, CreditCardDebt $debt): void
     {
-        abort_unless($debt->user_id === $request->user()->id, 404);
+        abort_unless($debt->usuario_id === $request->user()->id, 404);
     }
 
     private function authorizeCreditCard(Request $request, ?int $creditCardId): void
@@ -86,6 +86,6 @@ class CreditCardDebtController extends Controller
             return;
         }
 
-        abort_unless(CreditCard::whereKey($creditCardId)->where('user_id', $request->user()->id)->exists(), 422);
+        abort_unless(CreditCard::whereKey($creditCardId)->where('usuario_id', $request->user()->id)->exists(), 422);
     }
 }

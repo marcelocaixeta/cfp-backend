@@ -61,7 +61,7 @@ Em produção, recomenda-se adicionar um proxy HTTP dedicado, como Nginx, Caddy 
 ## Princípios Arquiteturais
 
 - API first: todas as funcionalidades expostas por endpoints REST em `/api/v1`.
-- Multiusuário por propriedade de dados: tabelas de domínio financeiro sempre possuem `user_id`.
+- Multiusuário por propriedade de dados: tabelas de domínio financeiro sempre possuem `usuario_id`.
 - Segurança por padrão: autenticação obrigatória, policies, rate limiting e validação em Form Requests.
 - Domínio organizado por módulos: código agrupado por responsabilidade, sem concentrar regras de negócio nos controllers.
 - Banco como fonte de verdade: PostgreSQL com migrations, constraints, índices e chaves estrangeiras.
@@ -139,9 +139,9 @@ Responsabilidades:
 
 Entidades principais:
 
-- `users`
-- `personal_access_tokens`
-- `password_reset_tokens`
+- `usuarios`
+- `tokens_acesso_pessoal`
+- `tokens_redefinicao_senha`
 
 Endpoints iniciais:
 
@@ -163,8 +163,8 @@ Responsabilidades:
 
 Entidades sugeridas:
 
-- `btc_assets`
-- `btc_price_snapshots`
+- `ativos_btc`
+- `capturas_precos_btc`
 - `btc_watchlist_items`
 
 Endpoints iniciais:
@@ -214,11 +214,11 @@ Responsabilidades:
 
 Entidades principais:
 
-- `credit_cards`
-- `credit_card_debts`
-- `loans`
-- `loan_installments`
-- `finance_categories`
+- `cartoes_credito`
+- `dividas_cartao_credito`
+- `emprestimos`
+- `parcelas_emprestimos`
+- `categorias_financeiras`
 
 Endpoints iniciais:
 
@@ -269,7 +269,7 @@ Responsabilidades:
 
 Entidades sugeridas:
 
-- `user_settings`
+- `configuracoes_usuario`
 - `notification_preferences`
 
 Endpoints iniciais:
@@ -291,8 +291,8 @@ Responsabilidades:
 
 Entidades principais:
 
-- `support_tickets`
-- `support_ticket_messages`
+- `chamados_suporte`
+- `mensagens_chamados_suporte`
 
 Endpoints iniciais:
 
@@ -306,204 +306,205 @@ POST   /api/v1/support/tickets/{ticket}/messages
 
 ## Modelo de Dados Inicial
 
-### users
+### usuarios
 
 | Campo | Tipo | Observação |
 | --- | --- | --- |
 | id | bigserial | PK |
-| name | varchar | Nome |
+| nome | varchar | Nome |
 | email | varchar | Único |
-| email_verified_at | timestamp nullable | Verificação |
-| password | varchar | Hash |
-| remember_token | varchar nullable | Laravel |
-| created_at / updated_at | timestamps | Controle |
+| email_verificado_em | timestamp nullable | Verificação |
+| senha | varchar | Hash |
+| lembrar_token | varchar nullable | Laravel |
+| criado_em / atualizado_em | timestamps | Controle |
 
-### credit_cards
+### cartoes_credito
 
 | Campo | Tipo | Observação |
 | --- | --- | --- |
 | id | bigserial | PK |
-| user_id | foreignId | FK users |
-| name | varchar | Ex.: Nubank, Inter |
-| last_four_digits | char(4) nullable | Final do cartão |
-| brand | varchar nullable | Visa, Mastercard |
-| limit_amount | decimal(14,2) nullable | Limite |
-| closing_day | smallint nullable | Dia de fechamento |
-| due_day | smallint nullable | Dia de vencimento |
-| is_active | boolean | Padrão true |
-| created_at / updated_at | timestamps | Controle |
-| deleted_at | softDeletes | Histórico |
+| usuario_id | foreignId | FK usuarios |
+| nome | varchar | Ex.: Nubank, Inter |
+| ultimos_quatro_digitos | char(4) nullable | Final do cartão |
+| bandeira | varchar nullable | Visa, Mastercard |
+| limite_valor | decimal(14,2) nullable | Limite |
+| dia_fechamento | smallint nullable | Dia de fechamento |
+| dia_vencimento | smallint nullable | Dia de vencimento |
+| ativo | boolean | Padrão true |
+| criado_em / atualizado_em | timestamps | Controle |
+| excluido_em | softDeletes | Histórico |
 
 Índices:
 
-- `index(user_id)`
-- `unique(user_id, name)` opcional
+- `index(usuario_id)`
+- `unique(usuario_id, nome)` opcional
 
-### credit_card_debts
+### dividas_cartao_credito
 
 | Campo | Tipo | Observação |
 | --- | --- | --- |
 | id | bigserial | PK |
-| user_id | foreignId | FK users |
-| credit_card_id | foreignId nullable | FK credit_cards |
-| category_id | foreignId nullable | FK finance_categories |
-| description | varchar | Descrição da compra/dívida |
-| total_amount | decimal(14,2) | Valor total |
-| installment_count | smallint | Quantidade de parcelas |
-| current_installment | smallint | Parcela atual |
-| installment_amount | decimal(14,2) | Valor da parcela |
-| first_due_date | date | Primeiro vencimento |
-| status | varchar | pending, paid, overdue, canceled |
-| notes | text nullable | Observações |
-| created_at / updated_at | timestamps | Controle |
-| deleted_at | softDeletes | Histórico |
+| usuario_id | foreignId | FK usuarios |
+| cartao_credito_id | foreignId nullable | FK cartoes_credito |
+| categoria_id | foreignId nullable | FK categorias_financeiras |
+| descricao | varchar | Descrição da compra/dívida |
+| valor_total | decimal(14,2) | Valor total |
+| quantidade_parcelas | smallint | Quantidade de parcelas |
+| parcela_atual | smallint | Parcela atual |
+| valor_parcela | decimal(14,2) | Valor da parcela |
+| primeira_data_vencimento | date | Primeiro vencimento |
+| situacao | varchar | pending, paid, overdue, canceled |
+| observacoes | text nullable | Observações |
+| criado_em / atualizado_em | timestamps | Controle |
+| excluido_em | softDeletes | Histórico |
 
 Índices:
 
-- `index(user_id, status)`
-- `index(user_id, first_due_date)`
-- `index(credit_card_id)`
+- `index(usuario_id, situacao)`
+- `index(usuario_id, primeira_data_vencimento)`
+- `index(cartao_credito_id)`
 
-### loans
+### emprestimos
 
 | Campo | Tipo | Observação |
 | --- | --- | --- |
 | id | bigserial | PK |
-| user_id | foreignId | FK users |
-| category_id | foreignId nullable | FK finance_categories |
-| lender_name | varchar | Banco ou credor |
-| description | varchar nullable | Descrição |
-| principal_amount | decimal(14,2) | Valor contratado |
-| interest_rate | decimal(8,4) nullable | Taxa ao mês ou ao ano |
-| interest_rate_period | varchar nullable | monthly, yearly |
-| installment_count | smallint | Total de parcelas |
-| installment_amount | decimal(14,2) | Valor da parcela |
-| first_due_date | date | Primeiro vencimento |
-| status | varchar | active, paid, overdue, canceled |
-| created_at / updated_at | timestamps | Controle |
-| deleted_at | softDeletes | Histórico |
+| usuario_id | foreignId | FK usuarios |
+| categoria_id | foreignId nullable | FK categorias_financeiras |
+| credor_nome | varchar | Banco ou credor |
+| descricao | varchar nullable | Descrição |
+| valor_principal | decimal(14,2) | Valor contratado |
+| taxa_juros | decimal(8,4) nullable | Taxa ao mês ou ao ano |
+| periodo_taxa_juros | varchar nullable | monthly, yearly |
+| quantidade_parcelas | smallint | Total de parcelas |
+| valor_parcela | decimal(14,2) | Valor da parcela |
+| primeira_data_vencimento | date | Primeiro vencimento |
+| situacao | varchar | active, paid, overdue, canceled |
+| criado_em / atualizado_em | timestamps | Controle |
+| excluido_em | softDeletes | Histórico |
 
 Índices:
 
-- `index(user_id, status)`
-- `index(user_id, first_due_date)`
+- `index(usuario_id, situacao)`
+- `index(usuario_id, primeira_data_vencimento)`
 
-### loan_installments
+### parcelas_emprestimos
 
 | Campo | Tipo | Observação |
 | --- | --- | --- |
 | id | bigserial | PK |
-| loan_id | foreignId | FK loans |
-| user_id | foreignId | FK users para consultas rápidas e policy |
-| installment_number | smallint | Número da parcela |
-| due_date | date | Vencimento |
-| amount | decimal(14,2) | Valor |
-| paid_at | timestamp nullable | Pagamento |
-| status | varchar | pending, paid, overdue, canceled |
-| created_at / updated_at | timestamps | Controle |
+| emprestimo_id | foreignId | FK emprestimos |
+| usuario_id | foreignId | FK usuarios para consultas rápidas e policy |
+| numero_parcela | smallint | Número da parcela |
+| data_vencimento | date | Vencimento |
+| valor | decimal(14,2) | Valor |
+| pago_em | timestamp nullable | Pagamento |
+| situacao | varchar | pending, paid, overdue, canceled |
+| criado_em / atualizado_em | timestamps | Controle |
 
 Índices:
 
-- `unique(loan_id, installment_number)`
-- `index(user_id, status)`
-- `index(user_id, due_date)`
+- `unique(emprestimo_id, numero_parcela)`
+- `index(usuario_id, situacao)`
+- `index(usuario_id, data_vencimento)`
 
-### finance_categories
-
-| Campo | Tipo | Observação |
-| --- | --- | --- |
-| id | bigserial | PK |
-| user_id | foreignId nullable | Null para categorias globais |
-| name | varchar | Nome |
-| type | varchar | debt, loan, income, expense |
-| color | varchar nullable | Hex |
-| created_at / updated_at | timestamps | Controle |
-
-### btc_assets
+### categorias_financeiras
 
 | Campo | Tipo | Observação |
 | --- | --- | --- |
 | id | bigserial | PK |
-| user_id | foreignId | FK users |
-| label | varchar | Nome da carteira/corretora |
-| amount_btc | decimal(20,8) | Quantidade BTC |
-| average_buy_price | decimal(18,2) nullable | Preço médio |
-| currency | char(3) | BRL/USD |
-| created_at / updated_at | timestamps | Controle |
-| deleted_at | softDeletes | Histórico |
+| usuario_id | foreignId nullable | Null para categorias globais |
+| nome | varchar | Nome |
+| tipo | varchar | debt, loan, income, expense |
+| cor | varchar nullable | Hex |
+| criado_em / atualizado_em | timestamps | Controle |
 
-### btc_price_snapshots
+### ativos_btc
 
 | Campo | Tipo | Observação |
 | --- | --- | --- |
 | id | bigserial | PK |
-| provider | varchar | Provedor |
-| currency | char(3) | BRL/USD |
-| price | decimal(18,2) | Cotação |
-| captured_at | timestamp | Momento da captura |
-| created_at / updated_at | timestamps | Controle |
+| usuario_id | foreignId | FK usuarios |
+| rotulo | varchar | Nome da carteira/corretora |
+| quantidade_btc | decimal(20,8) | Quantidade BTC |
+| preco_medio_compra | decimal(18,2) nullable | Preço médio |
+| moeda | char(3) | BRL/USD |
+| criado_em / atualizado_em | timestamps | Controle |
+| excluido_em | softDeletes | Histórico |
+
+### capturas_precos_btc
+
+| Campo | Tipo | Observação |
+| --- | --- | --- |
+| id | bigserial | PK |
+| provedor | varchar | Provedor |
+| moeda | char(3) | BRL/USD |
+| preco | decimal(18,2) | Cotação |
+| capturado_em | timestamp | Momento da captura |
+| criado_em / atualizado_em | timestamps | Controle |
 
 Índices:
 
-- `index(currency, captured_at)`
+- `index(moeda, capturado_em)`
 
-### user_settings
-
-| Campo | Tipo | Observação |
-| --- | --- | --- |
-| id | bigserial | PK |
-| user_id | foreignId | FK users, único |
-| default_currency | char(3) | BRL por padrão |
-| timezone | varchar | America/Sao_Paulo por padrão |
-| dashboard_preferences | jsonb | Preferências flexíveis |
-| created_at / updated_at | timestamps | Controle |
-
-### support_tickets
+### configuracoes_usuario
 
 | Campo | Tipo | Observação |
 | --- | --- | --- |
 | id | bigserial | PK |
-| user_id | foreignId | FK users |
-| subject | varchar | Assunto |
-| category | varchar nullable | Categoria |
-| priority | varchar | low, normal, high |
-| status | varchar | open, waiting_user, waiting_support, resolved, closed |
-| created_at / updated_at | timestamps | Controle |
+| usuario_id | foreignId | FK usuarios, único |
+| moeda_padrao | char(3) | BRL por padrão |
+| fuso_horario | varchar | America/Sao_Paulo por padrão |
+| preferencias_dashboard | jsonb | Preferências flexíveis |
+| preferencias_notificacao | jsonb | Preferências flexíveis |
+| criado_em / atualizado_em | timestamps | Controle |
 
-### support_ticket_messages
+### chamados_suporte
 
 | Campo | Tipo | Observação |
 | --- | --- | --- |
 | id | bigserial | PK |
-| ticket_id | foreignId | FK support_tickets |
-| user_id | foreignId | Autor |
-| message | text | Conteúdo |
-| is_internal | boolean | Padrão false |
-| created_at / updated_at | timestamps | Controle |
+| usuario_id | foreignId | FK usuarios |
+| assunto | varchar | Assunto |
+| categoria | varchar nullable | Categoria |
+| prioridade | varchar | low, normal, high |
+| situacao | varchar | open, waiting_user, waiting_support, resolved, closed |
+| criado_em / atualizado_em | timestamps | Controle |
+
+### mensagens_chamados_suporte
+
+| Campo | Tipo | Observação |
+| --- | --- | --- |
+| id | bigserial | PK |
+| chamado_id | foreignId | FK chamados_suporte |
+| usuario_id | foreignId | Autor |
+| mensagem | text | Conteúdo |
+| interno | boolean | Padrão false |
+| criado_em / atualizado_em | timestamps | Controle |
 
 ## Relacionamentos
 
 ```text
-users 1---n credit_cards
-users 1---n credit_card_debts
-credit_cards 1---n credit_card_debts
+usuarios 1---n cartoes_credito
+usuarios 1---n dividas_cartao_credito
+cartoes_credito 1---n dividas_cartao_credito
 
-users 1---n loans
-loans 1---n loan_installments
+usuarios 1---n emprestimos
+emprestimos 1---n parcelas_emprestimos
 
-users 1---n btc_assets
-users 1---1 user_settings
+usuarios 1---n ativos_btc
+usuarios 1---1 configuracoes_usuario
 
-users 1---n support_tickets
-support_tickets 1---n support_ticket_messages
+usuarios 1---n chamados_suporte
+chamados_suporte 1---n mensagens_chamados_suporte
 ```
 
 ## Segurança e Autorização
 
 - Usar Laravel Sanctum para autenticação por token.
 - Proteger rotas privadas com middleware `auth:sanctum`.
-- Aplicar Policies em todos os recursos com `user_id`.
-- Nunca confiar em `user_id` recebido pelo cliente; usar sempre `$request->user()->id`.
+- Aplicar Policies em todos os recursos com `usuario_id`.
+- Nunca confiar em `usuario_id` recebido pelo cliente; usar sempre `$request->user()->id`.
 - Validar payloads com Form Requests.
 - Aplicar rate limit em login, suporte e endpoints públicos.
 - Usar hash de senha nativo do Laravel.
@@ -515,7 +516,7 @@ Exemplo de regra de policy:
 ```php
 public function view(User $user, CreditCardDebt $debt): bool
 {
-    return $debt->user_id === $user->id;
+    return $debt->usuario_id === $user->id;
 }
 ```
 
@@ -536,9 +537,9 @@ Exemplo de resposta:
 {
   "data": {
     "id": 1,
-    "description": "Notebook",
-    "total_amount": "4500.00",
-    "status": "pending"
+    "descricao": "Notebook",
+    "valor_total": "4500.00",
+    "situacao": "pending"
   }
 }
 ```
@@ -549,7 +550,7 @@ Exemplo de erro:
 {
   "message": "The given data was invalid.",
   "errors": {
-    "total_amount": ["The total amount field is required."]
+    "valor_total": ["The valor total field is required."]
   }
 }
 ```

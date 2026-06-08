@@ -19,11 +19,11 @@ class EmailSignupTest extends TestCase
         $response
             ->assertCreated()
             ->assertJsonPath('data.email', 'usuario@email.com')
-            ->assertJsonPath('data.source', 'registration-popup');
+            ->assertJsonPath('data.origem', 'registration-popup');
 
-        $this->assertDatabaseHas('email_signups', [
+        $this->assertDatabaseHas('inscricoes_email', [
             'email' => 'usuario@email.com',
-            'source' => 'registration-popup',
+            'origem' => 'registration-popup',
         ]);
     }
 
@@ -31,19 +31,19 @@ class EmailSignupTest extends TestCase
     {
         EmailSignup::create([
             'email' => 'usuario@email.com',
-            'source' => 'registration-popup',
+            'origem' => 'registration-popup',
         ]);
 
         $response = $this->postJson('/api/v1/email-signups', [
             'email' => 'usuario@email.com',
-            'source' => 'fear-greed-popup',
+            'origem' => 'fear-greed-popup',
         ]);
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.source', 'fear-greed-popup');
+            ->assertJsonPath('data.origem', 'fear-greed-popup');
 
-        $this->assertDatabaseCount('email_signups', 1);
+        $this->assertDatabaseCount('inscricoes_email', 1);
     }
 
     public function test_it_requires_a_valid_email(): void

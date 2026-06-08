@@ -8,158 +8,168 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('finance_categories', function (Blueprint $table) {
+        Schema::create('categorias_financeiras', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->constrained()->cascadeOnDelete();
-            $table->string('name');
-            $table->string('type');
-            $table->string('color', 16)->nullable();
-            $table->timestamps();
+            $table->foreignId('usuario_id')->nullable()->constrained('usuarios')->cascadeOnDelete();
+            $table->string('nome');
+            $table->string('tipo');
+            $table->string('cor', 16)->nullable();
+            $table->timestamp('criado_em')->nullable();
+            $table->timestamp('atualizado_em')->nullable();
 
-            $table->index(['user_id', 'type']);
+            $table->index(['usuario_id', 'tipo']);
         });
 
-        Schema::create('credit_cards', function (Blueprint $table) {
+        Schema::create('cartoes_credito', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('name');
-            $table->char('last_four_digits', 4)->nullable();
-            $table->string('brand')->nullable();
-            $table->decimal('limit_amount', 14, 2)->nullable();
-            $table->unsignedTinyInteger('closing_day')->nullable();
-            $table->unsignedTinyInteger('due_day')->nullable();
-            $table->boolean('is_active')->default(true);
-            $table->timestamps();
-            $table->softDeletes();
+            $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
+            $table->string('nome');
+            $table->char('ultimos_quatro_digitos', 4)->nullable();
+            $table->string('bandeira')->nullable();
+            $table->decimal('limite_valor', 14, 2)->nullable();
+            $table->unsignedTinyInteger('dia_fechamento')->nullable();
+            $table->unsignedTinyInteger('dia_vencimento')->nullable();
+            $table->boolean('ativo')->default(true);
+            $table->timestamp('criado_em')->nullable();
+            $table->timestamp('atualizado_em')->nullable();
+            $table->softDeletes('excluido_em');
 
-            $table->index('user_id');
+            $table->index('usuario_id');
         });
 
-        Schema::create('credit_card_debts', function (Blueprint $table) {
+        Schema::create('dividas_cartao_credito', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('credit_card_id')->nullable()->constrained()->nullOnDelete();
-            $table->foreignId('category_id')->nullable()->constrained('finance_categories')->nullOnDelete();
-            $table->string('description');
-            $table->decimal('total_amount', 14, 2);
-            $table->unsignedSmallInteger('installment_count')->default(1);
-            $table->unsignedSmallInteger('current_installment')->default(1);
-            $table->decimal('installment_amount', 14, 2);
-            $table->date('first_due_date');
-            $table->string('status')->default('pending');
-            $table->text('notes')->nullable();
-            $table->timestamps();
-            $table->softDeletes();
+            $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
+            $table->foreignId('cartao_credito_id')->nullable()->constrained('cartoes_credito')->nullOnDelete();
+            $table->foreignId('categoria_id')->nullable()->constrained('categorias_financeiras')->nullOnDelete();
+            $table->string('descricao');
+            $table->decimal('valor_total', 14, 2);
+            $table->unsignedSmallInteger('quantidade_parcelas')->default(1);
+            $table->unsignedSmallInteger('parcela_atual')->default(1);
+            $table->decimal('valor_parcela', 14, 2);
+            $table->date('primeira_data_vencimento');
+            $table->string('situacao')->default('pending');
+            $table->text('observacoes')->nullable();
+            $table->timestamp('criado_em')->nullable();
+            $table->timestamp('atualizado_em')->nullable();
+            $table->softDeletes('excluido_em');
 
-            $table->index(['user_id', 'status']);
-            $table->index(['user_id', 'first_due_date']);
+            $table->index(['usuario_id', 'situacao']);
+            $table->index(['usuario_id', 'primeira_data_vencimento']);
         });
 
-        Schema::create('loans', function (Blueprint $table) {
+        Schema::create('emprestimos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('category_id')->nullable()->constrained('finance_categories')->nullOnDelete();
-            $table->string('lender_name');
-            $table->string('description')->nullable();
-            $table->decimal('principal_amount', 14, 2);
-            $table->decimal('interest_rate', 8, 4)->nullable();
-            $table->string('interest_rate_period')->nullable();
-            $table->unsignedSmallInteger('installment_count');
-            $table->decimal('installment_amount', 14, 2);
-            $table->date('first_due_date');
-            $table->string('status')->default('active');
-            $table->timestamps();
-            $table->softDeletes();
+            $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
+            $table->foreignId('categoria_id')->nullable()->constrained('categorias_financeiras')->nullOnDelete();
+            $table->string('credor_nome');
+            $table->string('descricao')->nullable();
+            $table->decimal('valor_principal', 14, 2);
+            $table->decimal('taxa_juros', 8, 4)->nullable();
+            $table->string('periodo_taxa_juros')->nullable();
+            $table->unsignedSmallInteger('quantidade_parcelas');
+            $table->decimal('valor_parcela', 14, 2);
+            $table->date('primeira_data_vencimento');
+            $table->string('situacao')->default('active');
+            $table->timestamp('criado_em')->nullable();
+            $table->timestamp('atualizado_em')->nullable();
+            $table->softDeletes('excluido_em');
 
-            $table->index(['user_id', 'status']);
-            $table->index(['user_id', 'first_due_date']);
+            $table->index(['usuario_id', 'situacao']);
+            $table->index(['usuario_id', 'primeira_data_vencimento']);
         });
 
-        Schema::create('loan_installments', function (Blueprint $table) {
+        Schema::create('parcelas_emprestimos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('loan_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->unsignedSmallInteger('installment_number');
-            $table->date('due_date');
-            $table->decimal('amount', 14, 2);
-            $table->timestamp('paid_at')->nullable();
-            $table->string('status')->default('pending');
-            $table->timestamps();
+            $table->foreignId('emprestimo_id')->constrained('emprestimos')->cascadeOnDelete();
+            $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
+            $table->unsignedSmallInteger('numero_parcela');
+            $table->date('data_vencimento');
+            $table->decimal('valor', 14, 2);
+            $table->timestamp('pago_em')->nullable();
+            $table->string('situacao')->default('pending');
+            $table->timestamp('criado_em')->nullable();
+            $table->timestamp('atualizado_em')->nullable();
 
-            $table->unique(['loan_id', 'installment_number']);
-            $table->index(['user_id', 'status']);
-            $table->index(['user_id', 'due_date']);
+            $table->unique(['emprestimo_id', 'numero_parcela']);
+            $table->index(['usuario_id', 'situacao']);
+            $table->index(['usuario_id', 'data_vencimento']);
         });
 
-        Schema::create('btc_assets', function (Blueprint $table) {
+        Schema::create('ativos_btc', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('label');
-            $table->decimal('amount_btc', 20, 8);
-            $table->decimal('average_buy_price', 18, 2)->nullable();
-            $table->char('currency', 3)->default('BRL');
-            $table->timestamps();
-            $table->softDeletes();
+            $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
+            $table->string('rotulo');
+            $table->decimal('quantidade_btc', 20, 8);
+            $table->decimal('preco_medio_compra', 18, 2)->nullable();
+            $table->char('moeda', 3)->default('BRL');
+            $table->timestamp('criado_em')->nullable();
+            $table->timestamp('atualizado_em')->nullable();
+            $table->softDeletes('excluido_em');
 
-            $table->index('user_id');
+            $table->index('usuario_id');
         });
 
-        Schema::create('btc_price_snapshots', function (Blueprint $table) {
+        Schema::create('capturas_precos_btc', function (Blueprint $table) {
             $table->id();
-            $table->string('provider');
-            $table->char('currency', 3)->default('BRL');
-            $table->decimal('price', 18, 2);
-            $table->timestamp('captured_at');
-            $table->timestamps();
+            $table->string('provedor');
+            $table->char('moeda', 3)->default('BRL');
+            $table->decimal('preco', 18, 2);
+            $table->timestamp('capturado_em');
+            $table->timestamp('criado_em')->nullable();
+            $table->timestamp('atualizado_em')->nullable();
 
-            $table->index(['currency', 'captured_at']);
+            $table->index(['moeda', 'capturado_em']);
         });
 
-        Schema::create('user_settings', function (Blueprint $table) {
+        Schema::create('configuracoes_usuario', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
-            $table->char('default_currency', 3)->default('BRL');
-            $table->string('timezone')->default('America/Sao_Paulo');
-            $table->jsonb('dashboard_preferences')->nullable();
-            $table->jsonb('notification_preferences')->nullable();
-            $table->timestamps();
+            $table->foreignId('usuario_id')->unique()->constrained('usuarios')->cascadeOnDelete();
+            $table->char('moeda_padrao', 3)->default('BRL');
+            $table->string('fuso_horario')->default('America/Sao_Paulo');
+            $table->jsonb('preferencias_dashboard')->nullable();
+            $table->jsonb('preferencias_notificacao')->nullable();
+            $table->timestamp('criado_em')->nullable();
+            $table->timestamp('atualizado_em')->nullable();
         });
 
-        Schema::create('support_tickets', function (Blueprint $table) {
+        Schema::create('chamados_suporte', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->string('subject');
-            $table->string('category')->nullable();
-            $table->string('priority')->default('normal');
-            $table->string('status')->default('open');
-            $table->timestamps();
+            $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
+            $table->string('assunto');
+            $table->string('categoria')->nullable();
+            $table->string('prioridade')->default('normal');
+            $table->string('situacao')->default('open');
+            $table->timestamp('criado_em')->nullable();
+            $table->timestamp('atualizado_em')->nullable();
 
-            $table->index(['user_id', 'status']);
+            $table->index(['usuario_id', 'situacao']);
         });
 
-        Schema::create('support_ticket_messages', function (Blueprint $table) {
+        Schema::create('mensagens_chamados_suporte', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('ticket_id')->constrained('support_tickets')->cascadeOnDelete();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->text('message');
-            $table->boolean('is_internal')->default(false);
-            $table->timestamps();
+            $table->foreignId('chamado_id')->constrained('chamados_suporte')->cascadeOnDelete();
+            $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
+            $table->text('mensagem');
+            $table->boolean('interno')->default(false);
+            $table->timestamp('criado_em')->nullable();
+            $table->timestamp('atualizado_em')->nullable();
 
-            $table->index(['ticket_id', 'created_at']);
+            $table->index(['chamado_id', 'criado_em']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('support_ticket_messages');
-        Schema::dropIfExists('support_tickets');
-        Schema::dropIfExists('user_settings');
-        Schema::dropIfExists('btc_price_snapshots');
-        Schema::dropIfExists('btc_assets');
-        Schema::dropIfExists('loan_installments');
-        Schema::dropIfExists('loans');
-        Schema::dropIfExists('credit_card_debts');
-        Schema::dropIfExists('credit_cards');
-        Schema::dropIfExists('finance_categories');
+        Schema::dropIfExists('mensagens_chamados_suporte');
+        Schema::dropIfExists('chamados_suporte');
+        Schema::dropIfExists('configuracoes_usuario');
+        Schema::dropIfExists('capturas_precos_btc');
+        Schema::dropIfExists('ativos_btc');
+        Schema::dropIfExists('parcelas_emprestimos');
+        Schema::dropIfExists('emprestimos');
+        Schema::dropIfExists('dividas_cartao_credito');
+        Schema::dropIfExists('cartoes_credito');
+        Schema::dropIfExists('categorias_financeiras');
     }
 };

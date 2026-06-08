@@ -14,15 +14,15 @@ class FinanceSummaryController extends Controller
 
         return response()->json([
             'data' => [
-                'credit_card_debts' => [
-                    'pending_total' => (string) $user->creditCardDebts()->where('status', 'pending')->sum('total_amount'),
-                    'overdue_total' => (string) $user->creditCardDebts()->where('status', 'overdue')->sum('total_amount'),
+                'dividas_cartao_credito' => [
+                    'total_pendente' => (string) $user->creditCardDebts()->where('situacao', 'pending')->sum('valor_total'),
+                    'total_vencido' => (string) $user->creditCardDebts()->where('situacao', 'overdue')->sum('valor_total'),
                     'count' => $user->creditCardDebts()->count(),
                 ],
-                'loans' => [
-                    'active_principal_total' => (string) $user->loans()->where('status', 'active')->sum('principal_amount'),
-                    'pending_installments_total' => (string) $user->loanInstallments()->where('status', 'pending')->sum('amount'),
-                    'overdue_installments_total' => (string) $user->loanInstallments()->where('status', 'overdue')->sum('amount'),
+                'emprestimos' => [
+                    'total_principal_ativo' => (string) $user->loans()->where('situacao', 'active')->sum('valor_principal'),
+                    'total_parcelas_pendentes' => (string) $user->loanInstallments()->where('situacao', 'pending')->sum('valor'),
+                    'total_parcelas_vencidas' => (string) $user->loanInstallments()->where('situacao', 'overdue')->sum('valor'),
                 ],
             ],
         ]);

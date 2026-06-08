@@ -11,15 +11,15 @@ class SupportTicketMessageController extends Controller
 {
     public function store(Request $request, SupportTicket $supportTicket): JsonResponse
     {
-        abort_unless($supportTicket->user_id === $request->user()->id, 404);
+        abort_unless($supportTicket->usuario_id === $request->user()->id, 404);
 
         $data = $request->validate([
-            'message' => ['required', 'string'],
+            'mensagem' => ['required', 'string'],
         ]);
 
         $message = $supportTicket->messages()->create([
-            'user_id' => $request->user()->id,
-            'message' => $data['message'],
+            'usuario_id' => $request->user()->id,
+            'mensagem' => $data['mensagem'],
         ]);
 
         return response()->json(['data' => $message], 201);

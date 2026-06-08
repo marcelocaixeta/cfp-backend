@@ -17,10 +17,10 @@ class SettingsController extends Controller
     public function update(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'default_currency' => ['sometimes', 'string', 'size:3'],
-            'timezone' => ['sometimes', 'string', 'max:255'],
-            'dashboard_preferences' => ['sometimes', 'array'],
-            'notification_preferences' => ['sometimes', 'array'],
+            'moeda_padrao' => ['sometimes', 'string', 'size:3'],
+            'fuso_horario' => ['sometimes', 'string', 'max:255'],
+            'preferencias_dashboard' => ['sometimes', 'array'],
+            'preferencias_notificacao' => ['sometimes', 'array'],
         ]);
 
         $settings = $this->settings($request);
@@ -32,10 +32,10 @@ class SettingsController extends Controller
     private function settings(Request $request): UserSetting
     {
         return $request->user()->setting()->firstOrCreate([], [
-            'default_currency' => 'BRL',
-            'timezone' => 'America/Sao_Paulo',
-            'dashboard_preferences' => [],
-            'notification_preferences' => [],
+            'moeda_padrao' => 'BRL',
+            'fuso_horario' => 'America/Sao_Paulo',
+            'preferencias_dashboard' => [],
+            'preferencias_notificacao' => [],
         ]);
     }
 }

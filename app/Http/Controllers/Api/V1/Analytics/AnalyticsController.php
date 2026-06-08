@@ -14,10 +14,10 @@ class AnalyticsController extends Controller
 
         return response()->json([
             'data' => [
-                'credit_card_debts_count' => $user->creditCardDebts()->count(),
-                'active_loans_count' => $user->loans()->where('status', 'active')->count(),
-                'btc_assets_count' => $user->btcAssets()->count(),
-                'open_support_tickets_count' => $user->supportTickets()->where('status', 'open')->count(),
+                'quantidade_dividas_cartao_credito' => $user->creditCardDebts()->count(),
+                'quantidade_emprestimos_ativos' => $user->loans()->where('situacao', 'active')->count(),
+                'quantidade_ativos_btc' => $user->btcAssets()->count(),
+                'quantidade_chamados_suporte_abertos' => $user->supportTickets()->where('situacao', 'open')->count(),
             ],
         ]);
     }

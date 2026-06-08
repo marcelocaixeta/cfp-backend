@@ -51,15 +51,15 @@ class BtcAssetController extends Controller
         $required = $partial ? 'sometimes' : 'required';
 
         return $request->validate([
-            'label' => [$required, 'string', 'max:255'],
-            'amount_btc' => [$required, 'numeric', 'min:0'],
-            'average_buy_price' => ['nullable', 'numeric', 'min:0'],
-            'currency' => ['sometimes', 'string', 'size:3'],
+            'rotulo' => [$required, 'string', 'max:255'],
+            'quantidade_btc' => [$required, 'numeric', 'min:0'],
+            'preco_medio_compra' => ['nullable', 'numeric', 'min:0'],
+            'moeda' => ['sometimes', 'string', 'size:3'],
         ]);
     }
 
     private function authorizeOwner(Request $request, BtcAsset $btcAsset): void
     {
-        abort_unless($btcAsset->user_id === $request->user()->id, 404);
+        abort_unless($btcAsset->usuario_id === $request->user()->id, 404);
     }
 }

@@ -2,39 +2,42 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\UsesPortugueseColumns;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['user_id', 'category_id', 'lender_name', 'description', 'principal_amount', 'interest_rate', 'interest_rate_period', 'installment_count', 'installment_amount', 'first_due_date', 'status'])]
+#[Fillable(['usuario_id', 'categoria_id', 'credor_nome', 'descricao', 'valor_principal', 'taxa_juros', 'periodo_taxa_juros', 'quantidade_parcelas', 'valor_parcela', 'primeira_data_vencimento', 'situacao'])]
 class Loan extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, UsesPortugueseColumns;
+
+    protected $table = 'emprestimos';
 
     protected function casts(): array
     {
         return [
-            'principal_amount' => 'decimal:2',
-            'interest_rate' => 'decimal:4',
-            'installment_amount' => 'decimal:2',
-            'first_due_date' => 'date',
+            'valor_principal' => 'decimal:2',
+            'taxa_juros' => 'decimal:4',
+            'valor_parcela' => 'decimal:2',
+            'primeira_data_vencimento' => 'date',
         ];
     }
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'usuario_id');
     }
 
     public function category(): BelongsTo
     {
-        return $this->belongsTo(FinanceCategory::class, 'category_id');
+        return $this->belongsTo(FinanceCategory::class, 'categoria_id');
     }
 
     public function installments(): HasMany
     {
-        return $this->hasMany(LoanInstallment::class);
+        return $this->hasMany(LoanInstallment::class, 'emprestimo_id');
     }
 }
