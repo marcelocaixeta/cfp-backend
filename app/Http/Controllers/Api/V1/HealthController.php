@@ -11,7 +11,7 @@ class HealthController extends Controller
     {
         return response()->json([
             'status' => 'ok',
-            'service' => 'bitcoin-backend',
+            'service' => 'cfp-backend',
         ]);
     }
 }

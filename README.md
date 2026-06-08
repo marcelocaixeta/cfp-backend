@@ -1,6 +1,6 @@
-# Bitcoin Backend
+# CFP Backend
 
-Backend API para o app Bitcoin e controle financeiro pessoal, construido com Laravel, PostgreSQL e Docker.
+Backend API para controle financeiro pessoal e acompanhamento de Bitcoin, construido com Laravel, PostgreSQL e Docker.
 
 ## Stack
 
@@ -41,8 +41,8 @@ Para desenvolvimento fora do container, tambem e necessario:
 Clone o repositorio:
 
 ```bash
-git clone git@github.com:marcelocaixeta/bitcoin-backend.git
-cd bitcoin-backend
+git clone git@github.com:marcelocaixeta/cfp-backend.git
+cd cfp-backend
 ```
 
 Crie o arquivo de ambiente:

@@ -1,8 +1,8 @@
-# Arquitetura do Backend Bitcoin
+# Arquitetura do CFP Backend
 
 ## Objetivo
 
-Construir um backend em Laravel moderno, com PostgreSQL e Docker, para controle individual de usuários nas seguintes áreas:
+Construir um backend em Laravel moderno, com PostgreSQL e Docker, para controle financeiro pessoal e acompanhamento de Bitcoin por usuário nas seguintes áreas:
 
 - Dashboard BTC
 - Análises
@@ -571,45 +571,59 @@ services:
     build:
       context: .
       dockerfile: docker/backend/Dockerfile
-    container_name: bitcoin_backend
+    container_name: cfp_backend
     working_dir: /var/www/html
     volumes:
       - .:/var/www/html
+      - composer_cache:/tmp/composer-cache
     ports:
       - "8000:8000"
     environment:
+      COMPOSER_CACHE_DIR: /tmp/composer-cache
       APP_ENV: local
       APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      FRONTEND_URL: http://localhost:3000,http://localhost:5173
       DB_CONNECTION: pgsql
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_DATABASE: bitcoin_backend
-      DB_USERNAME: bitcoin
-      DB_PASSWORD: bitcoin
+      DB_DATABASE: cfp_backend
+      DB_USERNAME: cfp_backend
+      DB_PASSWORD: cfp_backend
+      QUEUE_CONNECTION: database
+      CACHE_STORE: database
+      SESSION_DRIVER: database
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     command: php artisan serve --host=0.0.0.0 --port=8000
 
   postgres:
     image: postgres:16-alpine
-    container_name: bitcoin_postgres
+    container_name: cfp_postgres
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: bitcoin_backend
-      POSTGRES_USER: bitcoin
-      POSTGRES_PASSWORD: bitcoin
+      POSTGRES_DB: cfp_backend
+      POSTGRES_USER: cfp_backend
+      POSTGRES_PASSWORD: cfp_backend
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cfp_backend -d cfp_backend"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
 volumes:
+  composer_cache:
   postgres_data:
 ```
 
 ### Dockerfile Proposto
 
 ```Dockerfile
-FROM php:8.3-cli-alpine
+FROM php:8.5-cli-alpine
 
 RUN apk add --no-cache \
     bash \
@@ -633,18 +647,19 @@ Para produção, trocar `php artisan serve` por uma camada HTTP adequada, como N
 Variáveis principais:
 
 ```env
-APP_NAME="Bitcoin Backend"
+APP_NAME="CFP Backend"
 APP_ENV=local
 APP_KEY=
 APP_DEBUG=true
 APP_URL=http://localhost:8000
+FRONTEND_URL=http://localhost:3000,http://localhost:5173
 
 DB_CONNECTION=pgsql
 DB_HOST=postgres
 DB_PORT=5432
-DB_DATABASE=bitcoin_backend
-DB_USERNAME=bitcoin
-DB_PASSWORD=bitcoin
+DB_DATABASE=cfp_backend
+DB_USERNAME=cfp_backend
+DB_PASSWORD=cfp_backend
 
 QUEUE_CONNECTION=database
 CACHE_STORE=database
@@ -693,7 +708,7 @@ Resposta:
 ```json
 {
   "status": "ok",
-  "service": "bitcoin-backend"
+  "service": "cfp-backend"
 }
 ```
 
