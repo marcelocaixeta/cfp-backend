@@ -75,6 +75,15 @@ Execute as migrations:
 docker compose exec backend php artisan migrate
 ```
 
+Para rodar os testes, suba tambem o banco isolado de testes e execute a suite:
+
+```bash
+docker compose up -d postgres_test
+docker compose exec backend php artisan test
+```
+
+Os testes usam o banco `cfp_backend_testing` no servico `postgres_test`, com volume separado de `postgres_data`. Assim o `RefreshDatabase` limpa apenas os dados de teste e nao toca no banco local `cfp_backend`.
+
 A API ficara disponivel em:
 
 ```text
@@ -92,6 +101,7 @@ POST   /api/v1/auth/logout
 GET    /api/v1/me
 PATCH  /api/v1/me
 GET    /api/v1/finance/summary
+GET    /api/v1/finance/current-week-due-dates
 GET    /api/v1/btc/dashboard
 GET    /api/v1/analytics/overview
 ```
