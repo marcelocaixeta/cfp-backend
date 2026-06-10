@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'bitcoin' => [
+        'explorer_url' => env('BITCOIN_EXPLORER_URL', 'https://blockstream.info/api'),
+        'wallet_address' => env('BITCOIN_WALLET_ADDRESS'),
+        'timeout' => env('BITCOIN_EXPLORER_TIMEOUT', 10),
+    ],
+
 ];
