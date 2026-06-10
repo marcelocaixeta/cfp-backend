@@ -62,6 +62,17 @@ class SupportTicketController extends Controller
         return response()->json(['data' => $supportTicket->refresh()]);
     }
 
+    public function resolve(Request $request, SupportTicket $supportTicket): JsonResponse
+    {
+        $this->authorizeOwner($request, $supportTicket);
+
+        $supportTicket->update([
+            'situacao' => 'resolved',
+        ]);
+
+        return response()->json(['data' => $supportTicket->refresh()]);
+    }
+
     public function destroy(Request $request, SupportTicket $supportTicket): JsonResponse
     {
         $this->authorizeOwner($request, $supportTicket);

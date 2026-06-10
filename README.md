@@ -79,10 +79,11 @@ Para rodar os testes, suba tambem o banco isolado de testes e execute a suite:
 
 ```bash
 docker compose up -d postgres_test
+docker compose exec backend php artisan config:clear
 docker compose exec backend php artisan test
 ```
 
-Os testes usam o banco `cfp_backend_testing` no servico `postgres_test`, com volume separado de `postgres_data`. Assim o `RefreshDatabase` limpa apenas os dados de teste e nao toca no banco local `cfp_backend`.
+Os testes usam o banco `cfp_backend_testing` no servico `postgres_test`, com volume separado de `postgres_data`. Assim o `RefreshDatabase` limpa apenas os dados de teste e nao toca no banco local `cfp_backend`. A suite tambem possui uma trava em `tests/TestCase.php` para abortar caso a conexao esteja apontando para o banco principal.
 
 A API ficara disponivel em:
 
