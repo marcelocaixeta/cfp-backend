@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\Btc\BtcDashboardController;
 use App\Http\Controllers\Api\V1\EmailSignupController;
 use App\Http\Controllers\Api\V1\Finance\CreditCardController;
 use App\Http\Controllers\Api\V1\Finance\CreditCardDebtController;
+use App\Http\Controllers\Api\V1\Finance\CurrentWeekDueDateController;
 use App\Http\Controllers\Api\V1\Finance\FinanceSummaryController;
 use App\Http\Controllers\Api\V1\Finance\LoanController;
 use App\Http\Controllers\Api\V1\Finance\LoanInstallmentController;
@@ -33,6 +34,7 @@ Route::prefix('v1')->group(function (): void {
 
         Route::prefix('finance')->group(function (): void {
             Route::get('summary', FinanceSummaryController::class);
+            Route::get('current-week-due-dates', CurrentWeekDueDateController::class);
             Route::apiResource('credit-cards', CreditCardController::class);
             Route::apiResource('credit-card-debts', CreditCardDebtController::class);
             Route::apiResource('loans', LoanController::class);
