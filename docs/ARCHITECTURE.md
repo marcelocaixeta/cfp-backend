@@ -126,6 +126,20 @@ tests/
 
 ## Módulos
 
+### Endpoints Públicos e Operacionais
+
+Responsabilidades:
+
+- Verificar a disponibilidade básica da API.
+- Registrar interesse de emails vindo de fluxos públicos.
+
+Endpoints atuais:
+
+```text
+GET  /api/v1/health
+POST /api/v1/email-signups
+```
+
 ### 1. Autenticação e Usuários
 
 Responsabilidades:
@@ -136,6 +150,7 @@ Responsabilidades:
 - Recuperação de senha.
 - Perfil básico do usuário.
 - Isolamento de dados por usuário autenticado.
+- Administração simples de perfis de usuários.
 
 Entidades principais:
 
@@ -151,6 +166,8 @@ POST   /api/v1/auth/login
 POST   /api/v1/auth/logout
 GET    /api/v1/me
 PATCH  /api/v1/me
+GET    /api/v1/users
+PATCH  /api/v1/users/{user}/profile
 ```
 
 ### 2. Dashboard BTC
@@ -171,11 +188,12 @@ Endpoints iniciais:
 
 ```text
 GET    /api/v1/btc/dashboard
-GET    /api/v1/btc/prices/latest
 GET    /api/v1/btc/assets
 POST   /api/v1/btc/assets
-PATCH  /api/v1/btc/assets/{asset}
-DELETE /api/v1/btc/assets/{asset}
+GET    /api/v1/btc/assets/{btcAsset}
+PUT    /api/v1/btc/assets/{btcAsset}
+PATCH  /api/v1/btc/assets/{btcAsset}
+DELETE /api/v1/btc/assets/{btcAsset}
 ```
 
 Observação: a integração com cotação externa deve ficar encapsulada em `BtcPriceProviderInterface`, permitindo trocar o provedor sem afetar controllers ou banco.
@@ -198,9 +216,6 @@ Endpoints iniciais:
 
 ```text
 GET /api/v1/analytics/overview
-GET /api/v1/analytics/finance/monthly
-GET /api/v1/analytics/debts/projection
-GET /api/v1/analytics/btc
 ```
 
 ### 4. Finanças Pessoais
@@ -224,27 +239,31 @@ Endpoints iniciais:
 
 ```text
 GET    /api/v1/finance/summary
+GET    /api/v1/finance/current-week-due-dates
 
 GET    /api/v1/finance/credit-cards
 POST   /api/v1/finance/credit-cards
-GET    /api/v1/finance/credit-cards/{creditCard}
-PATCH  /api/v1/finance/credit-cards/{creditCard}
-DELETE /api/v1/finance/credit-cards/{creditCard}
+GET    /api/v1/finance/credit-cards/{credit_card}
+PUT    /api/v1/finance/credit-cards/{credit_card}
+PATCH  /api/v1/finance/credit-cards/{credit_card}
+DELETE /api/v1/finance/credit-cards/{credit_card}
 
 GET    /api/v1/finance/credit-card-debts
 POST   /api/v1/finance/credit-card-debts
-GET    /api/v1/finance/credit-card-debts/{debt}
-PATCH  /api/v1/finance/credit-card-debts/{debt}
-DELETE /api/v1/finance/credit-card-debts/{debt}
+GET    /api/v1/finance/credit-card-debts/{credit_card_debt}
+PUT    /api/v1/finance/credit-card-debts/{credit_card_debt}
+PATCH  /api/v1/finance/credit-card-debts/{credit_card_debt}
+DELETE /api/v1/finance/credit-card-debts/{credit_card_debt}
 
 GET    /api/v1/finance/loans
 POST   /api/v1/finance/loans
 GET    /api/v1/finance/loans/{loan}
+PUT    /api/v1/finance/loans/{loan}
 PATCH  /api/v1/finance/loans/{loan}
 DELETE /api/v1/finance/loans/{loan}
 
 GET    /api/v1/finance/loans/{loan}/installments
-PATCH  /api/v1/finance/loan-installments/{installment}
+PATCH  /api/v1/finance/loan-installments/{loanInstallment}
 ```
 
 Regras importantes:
@@ -277,7 +296,6 @@ Endpoints iniciais:
 ```text
 GET   /api/v1/settings
 PATCH /api/v1/settings
-PATCH /api/v1/settings/notifications
 ```
 
 ### 6. Suporte
@@ -297,11 +315,14 @@ Entidades principais:
 Endpoints iniciais:
 
 ```text
+GET    /api/v1/support/tickets/all
 GET    /api/v1/support/tickets
 POST   /api/v1/support/tickets
-GET    /api/v1/support/tickets/{ticket}
-PATCH  /api/v1/support/tickets/{ticket}
-POST   /api/v1/support/tickets/{ticket}/messages
+GET    /api/v1/support/tickets/{supportTicket}
+PATCH  /api/v1/support/tickets/{supportTicket}
+DELETE /api/v1/support/tickets/{supportTicket}
+PATCH  /api/v1/support/tickets/{supportTicket}/resolve
+POST   /api/v1/support/tickets/{supportTicket}/messages
 ```
 
 ## Modelo de Dados Inicial
