@@ -14,10 +14,14 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-#[Fillable(['nome', 'email', 'senha'])]
+#[Fillable(['nome', 'email', 'senha', 'perfil'])]
 #[Hidden(['senha', 'lembrar_token'])]
 class User extends Authenticatable
 {
+    public const PROFILE_ADMIN = 'admin';
+
+    public const PROFILE_USER = 'usuario';
+
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable, UsesPortugueseColumns;
 
@@ -26,6 +30,11 @@ class User extends Authenticatable
     protected $authPasswordName = 'senha';
 
     protected $rememberTokenName = 'lembrar_token';
+
+    public function isAdmin(): bool
+    {
+        return $this->perfil === self::PROFILE_ADMIN;
+    }
 
     public function creditCards(): HasMany
     {

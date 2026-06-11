@@ -101,6 +101,7 @@ POST   /api/v1/auth/login
 POST   /api/v1/auth/logout
 GET    /api/v1/me
 PATCH  /api/v1/me
+PATCH  /api/v1/users/{user}/profile
 GET    /api/v1/finance/summary
 GET    /api/v1/finance/current-week-due-dates
 GET    /api/v1/btc/dashboard

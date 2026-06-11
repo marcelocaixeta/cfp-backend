@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\Settings\SettingsController;
 use App\Http\Controllers\Api\V1\Support\SupportTicketController;
 use App\Http\Controllers\Api\V1\Support\SupportTicketMessageController;
+use App\Http\Controllers\Api\V1\UserProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function (): void {
@@ -31,6 +32,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('me', [AuthController::class, 'me']);
         Route::patch('me', [AuthController::class, 'updateMe']);
+        Route::patch('users/{user}/profile', [UserProfileController::class, 'update']);
 
         Route::prefix('finance')->group(function (): void {
             Route::get('summary', FinanceSummaryController::class);
