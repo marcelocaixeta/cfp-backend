@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -48,6 +51,56 @@ class AuthController extends Controller
             'data' => [
                 'user' => $user,
                 'token' => $user->createToken('api')->plainTextToken,
+            ],
+        ]);
+    }
+
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        Password::sendResetLink($data);
+
+        return response()->json([
+            'data' => [
+                'message' => 'Se o e-mail existir, enviaremos um link para redefinir a senha.',
+            ],
+        ]);
+    }
+
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'token' => ['required', 'string'],
+            'email' => ['required', 'email'],
+            'senha' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $status = Password::reset([
+            'token' => $data['token'],
+            'email' => $data['email'],
+            'password' => $data['senha'],
+            'password_confirmation' => $request->string('senha_confirmation')->toString(),
+        ], function (User $user, string $password): void {
+            $user->forceFill([
+                'senha' => $password,
+                'lembrar_token' => Str::random(60),
+            ])->save();
+
+            event(new PasswordReset($user));
+        });
+
+        if ($status !== Password::PASSWORD_RESET) {
+            throw ValidationException::withMessages([
+                'email' => ['O token de redefinicao de senha e invalido ou expirou.'],
+            ]);
+        }
+
+        return response()->json([
+            'data' => [
+                'message' => 'Senha redefinida com sucesso.',
             ],
         ]);
     }
