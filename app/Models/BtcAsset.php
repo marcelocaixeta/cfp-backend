@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-#[Fillable(['usuario_id', 'rotulo', 'quantidade_btc', 'preco_medio_compra', 'moeda'])]
+#[Fillable(['usuario_id', 'rotulo', 'quantidade_satoshis', 'preco_medio_compra', 'moeda'])]
 class BtcAsset extends Model
 {
     use SoftDeletes, UsesPortugueseColumns;
@@ -18,7 +18,7 @@ class BtcAsset extends Model
     protected function casts(): array
     {
         return [
-            'quantidade_btc' => 'decimal:8',
+            'quantidade_satoshis' => 'decimal:10',
             'preco_medio_compra' => 'decimal:2',
         ];
     }

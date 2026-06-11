@@ -52,7 +52,7 @@ class BtcAssetController extends Controller
 
         return $request->validate([
             'rotulo' => [$required, 'string', 'max:255'],
-            'quantidade_btc' => [$required, 'numeric', 'min:0'],
+            'quantidade_satoshis' => [$required, 'numeric', 'min:0', 'decimal:0,10'],
             'preco_medio_compra' => ['nullable', 'numeric', 'min:0'],
             'moeda' => ['sometimes', 'string', 'size:3'],
         ]);

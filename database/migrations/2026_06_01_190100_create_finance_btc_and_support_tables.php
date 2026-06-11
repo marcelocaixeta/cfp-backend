@@ -100,7 +100,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('usuario_id')->constrained('usuarios')->cascadeOnDelete();
             $table->string('rotulo');
-            $table->decimal('quantidade_btc', 20, 8);
+            $table->decimal('quantidade_satoshis', 30, 10);
             $table->decimal('preco_medio_compra', 18, 2)->nullable();
             $table->char('moeda', 3)->default('BRL');
             $table->timestamp('criado_em')->nullable();

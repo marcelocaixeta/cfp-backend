@@ -46,3 +46,4 @@ _ide_helper.php
 # Local virtual machines
 Homestead.json
 Homestead.yaml
+.aider*

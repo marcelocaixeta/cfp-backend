@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\V1\Analytics\AnalyticsController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
-use App\Http\Controllers\Api\V1\Btc\BtcAddressBalanceController;
 use App\Http\Controllers\Api\V1\Btc\BtcAssetController;
 use App\Http\Controllers\Api\V1\Btc\BtcDashboardController;
 use App\Http\Controllers\Api\V1\EmailSignupController;
@@ -47,7 +46,6 @@ Route::prefix('v1')->group(function (): void {
 
         Route::prefix('btc')->group(function (): void {
             Route::get('dashboard', BtcDashboardController::class);
-            Route::get('address-balance', BtcAddressBalanceController::class)->middleware('throttle:20,1');
             Route::apiResource('assets', BtcAssetController::class)->parameters(['assets' => 'btcAsset']);
         });
 
