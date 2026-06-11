@@ -17,6 +17,20 @@ class SupportTicketController extends Controller
         ]);
     }
 
+    public function indexAll(Request $request): JsonResponse
+    {
+        abort_unless($request->user()->isAdmin(), 403);
+
+        return response()->json([
+            'data' => SupportTicket::query()
+                ->with(['user:id,nome,email,perfil'])
+                ->withCount('messages')
+                ->latest()
+                ->orderByDesc('id')
+                ->paginate(),
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -64,7 +78,7 @@ class SupportTicketController extends Controller
 
     public function resolve(Request $request, SupportTicket $supportTicket): JsonResponse
     {
-        $this->authorizeOwner($request, $supportTicket);
+        abort_unless($request->user()->isAdmin(), 403);
 
         $supportTicket->update([
             'situacao' => 'resolved',

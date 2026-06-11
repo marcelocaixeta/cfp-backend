@@ -57,6 +57,7 @@ Route::prefix('v1')->group(function (): void {
         Route::patch('settings', [SettingsController::class, 'update']);
 
         Route::prefix('support')->group(function (): void {
+            Route::get('tickets/all', [SupportTicketController::class, 'indexAll']);
             Route::apiResource('tickets', SupportTicketController::class)->parameters(['tickets' => 'supportTicket']);
             Route::patch('tickets/{supportTicket}/resolve', [SupportTicketController::class, 'resolve']);
             Route::post('tickets/{supportTicket}/messages', [SupportTicketMessageController::class, 'store']);

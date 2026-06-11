@@ -12,13 +12,18 @@ class SupportTicketResolveTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_authenticated_user_can_resolve_own_support_ticket(): void
+    public function test_admin_can_resolve_support_ticket(): void
     {
-        $user = User::factory()->create();
-        Sanctum::actingAs($user);
+        $admin = User::factory()->create([
+            'perfil' => User::PROFILE_ADMIN,
+        ]);
+        $owner = User::factory()->create([
+            'perfil' => User::PROFILE_USER,
+        ]);
+        Sanctum::actingAs($admin);
 
         $ticket = SupportTicket::create([
-            'usuario_id' => $user->id,
+            'usuario_id' => $owner->id,
             'assunto' => 'Erro ao acessar dashboard',
             'categoria' => 'acesso',
             'prioridade' => 'normal',
@@ -32,26 +37,27 @@ class SupportTicketResolveTest extends TestCase
 
         $this->assertDatabaseHas('chamados_suporte', [
             'id' => $ticket->id,
-            'usuario_id' => $user->id,
+            'usuario_id' => $owner->id,
             'situacao' => 'resolved',
         ]);
     }
 
-    public function test_authenticated_user_cannot_resolve_another_users_support_ticket(): void
+    public function test_non_admin_cannot_resolve_own_support_ticket(): void
     {
-        $owner = User::factory()->create();
-        $otherUser = User::factory()->create();
-        Sanctum::actingAs($otherUser);
+        $user = User::factory()->create([
+            'perfil' => User::PROFILE_USER,
+        ]);
+        Sanctum::actingAs($user);
 
         $ticket = SupportTicket::create([
-            'usuario_id' => $owner->id,
-            'assunto' => 'Chamado de outro usuario',
+            'usuario_id' => $user->id,
+            'assunto' => 'Chamado do usuario comum',
             'prioridade' => 'high',
             'situacao' => 'open',
         ]);
 
         $this->patchJson("/api/v1/support/tickets/{$ticket->id}/resolve")
-            ->assertNotFound();
+            ->assertForbidden();
 
         $this->assertDatabaseHas('chamados_suporte', [
             'id' => $ticket->id,
