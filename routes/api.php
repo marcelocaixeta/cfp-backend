@@ -32,6 +32,7 @@ Route::prefix('v1')->group(function (): void {
         Route::post('auth/logout', [AuthController::class, 'logout']);
         Route::get('me', [AuthController::class, 'me']);
         Route::patch('me', [AuthController::class, 'updateMe']);
+        Route::get('users', [UserProfileController::class, 'index']);
         Route::patch('users/{user}/profile', [UserProfileController::class, 'update']);
 
         Route::prefix('finance')->group(function (): void {
