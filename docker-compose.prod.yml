@@ -1,0 +1,8 @@
+services:
+  backend:
+    environment:
+      FRONTEND_URL: ${FRONTEND_URL:-http://163.176.47.56:5173}
+
+  postgres_test:
+    profiles:
+      - test
