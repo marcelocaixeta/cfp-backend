@@ -5,9 +5,10 @@ Thumbs.db
 # Environment and secrets
 .env
 .env.*
-!.env.example
+.env.example
 /auth.json
 /storage/*.key
+docker-compose.prod.yml
 
 # Dependencies
 /node_modules
