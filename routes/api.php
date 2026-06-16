@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\V1\Finance\CreditCardController;
 use App\Http\Controllers\Api\V1\Finance\CreditCardDebtController;
 use App\Http\Controllers\Api\V1\Finance\CurrentWeekDueDateController;
 use App\Http\Controllers\Api\V1\Finance\FinanceSummaryController;
+use App\Http\Controllers\Api\V1\Finance\HomeBillController;
 use App\Http\Controllers\Api\V1\Finance\LoanController;
 use App\Http\Controllers\Api\V1\Finance\LoanInstallmentController;
 use App\Http\Controllers\Api\V1\HealthController;
@@ -41,6 +42,7 @@ Route::prefix('v1')->group(function (): void {
             Route::get('current-week-due-dates', CurrentWeekDueDateController::class);
             Route::apiResource('credit-cards', CreditCardController::class);
             Route::apiResource('credit-card-debts', CreditCardDebtController::class);
+            Route::apiResource('home-bills', HomeBillController::class)->parameters(['home-bills' => 'homeBill']);
             Route::apiResource('loans', LoanController::class);
             Route::get('loans/{loan}/installments', [LoanInstallmentController::class, 'index']);
             Route::patch('loan-installments/{loanInstallment}', [LoanInstallmentController::class, 'update']);
