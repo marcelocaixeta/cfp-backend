@@ -19,7 +19,9 @@ class CreditCardDebtController extends Controller
             $query->where('situacao', $request->string('situacao'));
         }
 
-        return response()->json(['data' => $query->paginate()]);
+        return response()->json([
+            'data' => $query->paginate()->through(fn (CreditCardDebt $debt) => $this->serializeDebt($debt)),
+        ]);
     }
 
     public function store(Request $request): JsonResponse
@@ -29,14 +31,14 @@ class CreditCardDebtController extends Controller
 
         $debt = $request->user()->creditCardDebts()->create($data);
 
-        return response()->json(['data' => $debt], 201);
+        return response()->json(['data' => $this->serializeDebt($debt->load('creditCard'))], 201);
     }
 
     public function show(Request $request, CreditCardDebt $creditCardDebt): JsonResponse
     {
         $this->authorizeOwner($request, $creditCardDebt);
 
-        return response()->json(['data' => $creditCardDebt->load('creditCard')]);
+        return response()->json(['data' => $this->serializeDebt($creditCardDebt->load('creditCard'))]);
     }
 
     public function update(Request $request, CreditCardDebt $creditCardDebt): JsonResponse
@@ -46,7 +48,7 @@ class CreditCardDebtController extends Controller
         $this->authorizeCreditCard($request, $data['cartao_credito_id'] ?? null);
         $creditCardDebt->update($data);
 
-        return response()->json(['data' => $creditCardDebt->refresh()]);
+        return response()->json(['data' => $this->serializeDebt($creditCardDebt->refresh()->load('creditCard'))]);
     }
 
     public function destroy(Request $request, CreditCardDebt $creditCardDebt): JsonResponse
@@ -87,5 +89,20 @@ class CreditCardDebtController extends Controller
         }
 
         abort_unless(CreditCard::whereKey($creditCardId)->where('usuario_id', $request->user()->id)->exists(), 422);
+    }
+
+    private function serializeDebt(CreditCardDebt $debt): array
+    {
+        $data = $debt->toArray();
+        $card = $debt->creditCard;
+
+        $data['cartao_credito'] = $card ? [
+            'id' => $card->id,
+            'nome' => $card->nome,
+            'ultimos_quatro_digitos' => $card->ultimos_quatro_digitos,
+            'bandeira' => $card->bandeira,
+        ] : null;
+
+        return $data;
     }
 }
