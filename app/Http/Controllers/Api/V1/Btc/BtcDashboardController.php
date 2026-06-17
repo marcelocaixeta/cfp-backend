@@ -13,7 +13,7 @@ class BtcDashboardController extends Controller
     {
         $currency = $request->query('moeda', 'BRL');
         $latestPrice = BtcPriceSnapshot::where('moeda', $currency)->latest('capturado_em')->first();
-        $assets = $request->user()->btcAssets()->get();
+        $assets = $request->user()->btcAssets()->where('tipo_ativo', 'BTC')->get();
         $totalSatoshis = $assets->sum(fn ($asset): float => (float) $asset->quantidade_satoshis);
         $totalBtc = $totalSatoshis / 100_000_000;
 

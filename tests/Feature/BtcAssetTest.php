@@ -24,12 +24,14 @@ class BtcAssetTest extends TestCase
         ])
             ->assertCreated()
             ->assertJsonPath('data.rotulo', 'Carteira principal')
+            ->assertJsonPath('data.tipo_ativo', 'BTC')
             ->assertJsonPath('data.quantidade_satoshis', '123456789.1234567890')
             ->assertJsonPath('data.moeda', 'BRL');
 
         $this->assertDatabaseHas('ativos_btc', [
             'usuario_id' => $user->id,
             'rotulo' => 'Carteira principal',
+            'tipo_ativo' => 'BTC',
             'quantidade_satoshis' => '123456789.1234567890',
             'moeda' => 'BRL',
         ]);
@@ -80,5 +82,85 @@ class BtcAssetTest extends TestCase
         ])
             ->assertCreated()
             ->assertJsonPath('data.quantidade_satoshis', '1667367.1234567890');
+    }
+
+    public function test_authenticated_user_can_create_fixed_income_asset(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $this->postJson('/api/v1/btc/assets', [
+            'rotulo' => 'Tesouro Selic',
+            'tipo_ativo' => 'Renda Fixa',
+            'valor_investido' => '1000.00',
+            'valor_atual' => '1035.45',
+            'moeda' => 'BRL',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.rotulo', 'Tesouro Selic')
+            ->assertJsonPath('data.tipo_ativo', 'RENDA_FIXA')
+            ->assertJsonPath('data.valor_investido', '1000.00')
+            ->assertJsonPath('data.valor_atual', '1035.45')
+            ->assertJsonPath('data.quantidade_satoshis', null);
+
+        $this->assertDatabaseHas('ativos_btc', [
+            'usuario_id' => $user->id,
+            'rotulo' => 'Tesouro Selic',
+            'tipo_ativo' => 'RENDA_FIXA',
+            'valor_atual' => '1035.45',
+        ]);
+    }
+
+    public function test_authenticated_user_can_create_variable_income_asset(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->postJson('/api/v1/btc/assets', [
+            'rotulo' => 'PETR4',
+            'tipo_ativo' => 'renda_variavel',
+            'valor_investido' => '2500.00',
+            'valor_atual' => '2710.20',
+            'moeda' => 'BRL',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.tipo_ativo', 'RENDA_VARIAVEL')
+            ->assertJsonPath('data.valor_atual', '2710.20');
+    }
+
+    public function test_non_btc_asset_requires_current_value(): void
+    {
+        Sanctum::actingAs(User::factory()->create());
+
+        $this->postJson('/api/v1/btc/assets', [
+            'rotulo' => 'CDB',
+            'tipo_ativo' => 'RENDA_FIXA',
+            'moeda' => 'BRL',
+        ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('valor_atual');
+    }
+
+    public function test_btc_dashboard_ignores_non_btc_assets(): void
+    {
+        $user = User::factory()->create();
+        $user->btcAssets()->create([
+            'rotulo' => 'Carteira principal',
+            'tipo_ativo' => 'BTC',
+            'quantidade_satoshis' => '100000000.0000000000',
+            'moeda' => 'BRL',
+        ]);
+        $user->btcAssets()->create([
+            'rotulo' => 'Tesouro Selic',
+            'tipo_ativo' => 'RENDA_FIXA',
+            'valor_atual' => '5000.00',
+            'moeda' => 'BRL',
+        ]);
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/v1/btc/dashboard')
+            ->assertOk()
+            ->assertJsonPath('data.total_satoshis', '100000000.0000000000')
+            ->assertJsonPath('data.total_btc', '1.00000000')
+            ->assertJsonCount(1, 'data.ativos');
     }
 }

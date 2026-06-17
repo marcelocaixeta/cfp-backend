@@ -170,13 +170,14 @@ GET    /api/v1/users
 PATCH  /api/v1/users/{user}/profile
 ```
 
-### 2. Dashboard BTC
+### 2. Ativos e Dashboard BTC
 
 Responsabilidades:
 
 - Exibir visão consolidada de Bitcoin.
 - Mostrar preço atual, variação, holdings cadastrados e indicadores resumidos.
-- Consolidar dados financeiros pessoais relacionados a BTC quando existirem.
+- Cadastrar ativos financeiros pessoais classificados como BTC, Renda Fixa ou Renda Variável.
+- Consolidar no dashboard BTC apenas os ativos classificados como BTC.
 
 Entidades sugeridas:
 
@@ -446,9 +447,12 @@ POST   /api/v1/support/tickets/{supportTicket}/messages
 | --- | --- | --- |
 | id | bigserial | PK |
 | usuario_id | foreignId | FK usuarios |
-| rotulo | varchar | Nome da carteira/corretora |
-| quantidade_btc | decimal(20,8) | Quantidade BTC |
-| preco_medio_compra | decimal(18,2) nullable | Preço médio |
+| rotulo | varchar | Nome da carteira, corretora ou ativo |
+| tipo_ativo | varchar | BTC, RENDA_FIXA ou RENDA_VARIAVEL |
+| quantidade_satoshis | decimal(30,10) nullable | Quantidade em satoshis para ativos BTC |
+| preco_medio_compra | decimal(18,2) nullable | Preço médio para BTC |
+| valor_investido | decimal(18,2) nullable | Valor aplicado em ativos não BTC |
+| valor_atual | decimal(18,2) nullable | Valor atual em ativos não BTC |
 | moeda | char(3) | BRL/USD |
 | criado_em / atualizado_em | timestamps | Controle |
 | excluido_em | softDeletes | Histórico |
