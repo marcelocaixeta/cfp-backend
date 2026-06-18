@@ -170,7 +170,7 @@ GET    /api/v1/users
 PATCH  /api/v1/users/{user}/profile
 ```
 
-### 2. Ativos e Dashboard BTC
+### 2. Dashboard Financeiro
 
 Responsabilidades:
 
