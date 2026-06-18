@@ -8,10 +8,12 @@ use App\Http\Controllers\Api\V1\EmailSignupController;
 use App\Http\Controllers\Api\V1\Finance\CreditCardController;
 use App\Http\Controllers\Api\V1\Finance\CreditCardDebtController;
 use App\Http\Controllers\Api\V1\Finance\CurrentWeekDueDateController;
+use App\Http\Controllers\Api\V1\Finance\FinanceDashboardController;
 use App\Http\Controllers\Api\V1\Finance\FinanceSummaryController;
 use App\Http\Controllers\Api\V1\Finance\HomeBillController;
 use App\Http\Controllers\Api\V1\Finance\LoanController;
 use App\Http\Controllers\Api\V1\Finance\LoanInstallmentController;
+use App\Http\Controllers\Api\V1\Finance\MonthlyIncomeController;
 use App\Http\Controllers\Api\V1\HealthController;
 use App\Http\Controllers\Api\V1\Settings\SettingsController;
 use App\Http\Controllers\Api\V1\Support\SupportTicketController;
@@ -38,13 +40,17 @@ Route::prefix('v1')->group(function (): void {
         Route::patch('users/{user}/profile', [UserProfileController::class, 'update']);
 
         Route::prefix('finance')->group(function (): void {
+            Route::get('dashboard', FinanceDashboardController::class);
             Route::get('summary', FinanceSummaryController::class);
             Route::get('current-week-due-dates', CurrentWeekDueDateController::class);
             Route::apiResource('credit-cards', CreditCardController::class);
             Route::apiResource('credit-card-debts', CreditCardDebtController::class);
+            Route::apiResource('income', MonthlyIncomeController::class)->parameters(['income' => 'monthlyIncome']);
+            Route::apiResource('receitas-mensais', MonthlyIncomeController::class)->parameters(['receitas-mensais' => 'monthlyIncome']);
             Route::apiResource('home-bills', HomeBillController::class)->parameters(['home-bills' => 'homeBill']);
             Route::apiResource('loans', LoanController::class);
             Route::get('loans/{loan}/installments', [LoanInstallmentController::class, 'index']);
+            Route::patch('loan-installments/{loanInstallment}/pay', [LoanInstallmentController::class, 'pay']);
             Route::patch('loan-installments/{loanInstallment}', [LoanInstallmentController::class, 'update']);
         });
 

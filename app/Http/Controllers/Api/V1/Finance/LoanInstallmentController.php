@@ -37,4 +37,20 @@ class LoanInstallmentController extends Controller
 
         return response()->json(['data' => $loanInstallment->refresh()]);
     }
+
+    public function pay(Request $request, LoanInstallment $loanInstallment): JsonResponse
+    {
+        abort_unless($loanInstallment->usuario_id === $request->user()->id, 404);
+
+        $data = $request->validate([
+            'pago_em' => ['nullable', 'date'],
+        ]);
+
+        $loanInstallment->update([
+            'situacao' => 'paid',
+            'pago_em' => $data['pago_em'] ?? now(),
+        ]);
+
+        return response()->json(['data' => $loanInstallment->refresh()]);
+    }
 }

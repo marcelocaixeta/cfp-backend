@@ -223,6 +223,7 @@ GET /api/v1/analytics/overview
 
 Responsabilidades:
 
+- Cadastro de receitas mensais (salário, freelancer, etc.).
 - Cadastro de dívidas no cartão de crédito.
 - Cadastro de prestações de empréstimos.
 - Controle por usuário.
@@ -230,6 +231,7 @@ Responsabilidades:
 
 Entidades principais:
 
+- `receitas_mensais`
 - `cartoes_credito`
 - `dividas_cartao_credito`
 - `emprestimos`
@@ -240,7 +242,15 @@ Endpoints iniciais:
 
 ```text
 GET    /api/v1/finance/summary
+GET    /api/v1/finance/dashboard?mes=YYYY-MM
 GET    /api/v1/finance/current-week-due-dates
+
+GET    /api/v1/finance/income
+POST   /api/v1/finance/income
+GET    /api/v1/finance/income/{income}
+PUT    /api/v1/finance/income/{income}
+PATCH  /api/v1/finance/income/{income}
+DELETE /api/v1/finance/income/{income}
 
 GET    /api/v1/finance/credit-cards
 POST   /api/v1/finance/credit-cards
@@ -265,6 +275,7 @@ DELETE /api/v1/finance/loans/{loan}
 
 GET    /api/v1/finance/loans/{loan}/installments
 PATCH  /api/v1/finance/loan-installments/{loanInstallment}
+PATCH  /api/v1/finance/loan-installments/{loanInstallment}/pay
 ```
 
 Regras importantes:
@@ -339,6 +350,27 @@ POST   /api/v1/support/tickets/{supportTicket}/messages
 | senha | varchar | Hash |
 | lembrar_token | varchar nullable | Laravel |
 | criado_em / atualizado_em | timestamps | Controle |
+
+### receitas_mensais
+
+| Campo | Tipo | Observação |
+| --- | --- | --- |
+| id | bigserial | PK |
+| usuario_id | foreignId | FK usuarios |
+| categoria_id | foreignId nullable | FK categorias_financeiras |
+| descricao | varchar | Ex.: Salário, Freelance, Dividendos |
+| valor | decimal(14,2) | Valor da receita |
+| data_recebimento | date | Data do recebimento |
+| recorrente | boolean | Padrão true |
+| tipo_receita | varchar | salary, freelance, investment, other |
+| observacoes | text nullable | Observações |
+| criado_em / atualizado_em | timestamps | Controle |
+| excluido_em | softDeletes | Histórico |
+
+Índices:
+
+- `index(usuario_id, data_recebimento)`
+- `index(usuario_id, tipo_receita)`
 
 ### cartoes_credito
 
@@ -510,6 +542,8 @@ POST   /api/v1/support/tickets/{supportTicket}/messages
 ## Relacionamentos
 
 ```text
+usuarios 1---n receitas_mensais
+
 usuarios 1---n cartoes_credito
 usuarios 1---n dividas_cartao_credito
 cartoes_credito 1---n dividas_cartao_credito

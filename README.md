@@ -104,7 +104,14 @@ PATCH  /api/v1/me
 GET    /api/v1/users
 PATCH  /api/v1/users/{user}/profile
 GET    /api/v1/finance/summary
+GET    /api/v1/finance/dashboard?mes=YYYY-MM
 GET    /api/v1/finance/current-week-due-dates
+GET    /api/v1/finance/receitas-mensais
+POST   /api/v1/finance/receitas-mensais
+GET    /api/v1/finance/receitas-mensais/{monthlyIncome}
+PUT    /api/v1/finance/receitas-mensais/{monthlyIncome}
+PATCH  /api/v1/finance/receitas-mensais/{monthlyIncome}
+DELETE /api/v1/finance/receitas-mensais/{monthlyIncome}
 GET    /api/v1/btc/dashboard
 GET    /api/v1/analytics/overview
 ```

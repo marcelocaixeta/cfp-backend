@@ -57,6 +57,11 @@ class User extends Authenticatable
         return $this->hasMany(Loan::class, 'usuario_id');
     }
 
+    public function monthlyIncomes(): HasMany
+    {
+        return $this->hasMany(MonthlyIncome::class, 'usuario_id');
+    }
+
     public function homeBills(): HasMany
     {
         return $this->hasMany(HomeBill::class, 'usuario_id');
