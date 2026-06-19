@@ -15,7 +15,7 @@ class ForceCors
 
         $allowOrigin = in_array($origin, $this->allowedOrigins(), true)
             ? $origin
-            : self::env('FALLBACK_ORIGIN');
+            : env('FALLBACK_ORIGIN', 'https://marcelocaixeta.api.br');
 
         if ($request->getMethod() === 'OPTIONS') {
             return response('', 204)
