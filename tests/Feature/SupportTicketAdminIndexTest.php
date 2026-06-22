@@ -55,7 +55,8 @@ class SupportTicketAdminIndexTest extends TestCase
             ->assertJsonPath('data.data.0.messages_count', 0)
             ->assertJsonPath('data.data.1.id', $firstTicket->id)
             ->assertJsonPath('data.data.1.user.nome', 'Usuario Ana')
-            ->assertJsonPath('data.data.1.messages_count', 1);
+            ->assertJsonPath('data.data.1.messages_count', 1)
+            ->assertJsonPath('data.data.1.messages.0.mensagem', 'Nao consigo acessar.');
     }
 
     public function test_non_admin_cannot_list_all_support_tickets(): void

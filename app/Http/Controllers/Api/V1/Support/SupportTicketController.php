@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SupportTicket;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class SupportTicketController extends Controller
@@ -13,7 +14,13 @@ class SupportTicketController extends Controller
     public function index(Request $request): JsonResponse
     {
         return response()->json([
-            'data' => $request->user()->supportTickets()->withCount('messages')->latest()->paginate(),
+            'data' => $request->user()->supportTickets()
+                ->with([
+                    'messages' => fn ($query) => $query->with('user:id,nome,email,perfil')->oldest(),
+                ])
+                ->withCount('messages')
+                ->latest()
+                ->paginate(),
         ]);
     }
 
@@ -23,7 +30,10 @@ class SupportTicketController extends Controller
 
         return response()->json([
             'data' => SupportTicket::query()
-                ->with(['user:id,nome,email,perfil'])
+                ->with([
+                    'user:id,nome,email,perfil',
+                    'messages' => fn ($query) => $query->with('user:id,nome,email,perfil')->oldest(),
+                ])
                 ->withCount('messages')
                 ->latest()
                 ->orderByDesc('id')
@@ -59,7 +69,7 @@ class SupportTicketController extends Controller
     {
         $this->authorizeOwner($request, $supportTicket);
 
-        return response()->json(['data' => $supportTicket->load('messages')]);
+        return response()->json(['data' => $supportTicket->load('messages.user:id,nome,email,perfil')]);
     }
 
     public function update(Request $request, SupportTicket $supportTicket): JsonResponse
@@ -80,11 +90,24 @@ class SupportTicketController extends Controller
     {
         abort_unless($request->user()->isAdmin(), 403);
 
-        $supportTicket->update([
-            'situacao' => 'resolved',
+        $data = $request->validate([
+            'mensagem' => ['sometimes', 'string'],
         ]);
 
-        return response()->json(['data' => $supportTicket->refresh()]);
+        DB::transaction(function () use ($data, $request, $supportTicket): void {
+            if (isset($data['mensagem']) && trim($data['mensagem']) !== '') {
+                $supportTicket->messages()->create([
+                    'usuario_id' => $request->user()->id,
+                    'mensagem' => trim($data['mensagem']),
+                ]);
+            }
+
+            $supportTicket->update([
+                'situacao' => 'resolved',
+            ]);
+        });
+
+        return response()->json(['data' => $supportTicket->refresh()->load('messages.user:id,nome,email,perfil')]);
     }
 
     public function destroy(Request $request, SupportTicket $supportTicket): JsonResponse
