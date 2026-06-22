@@ -108,4 +108,94 @@ class HomeBillTest extends TestCase
         $this->getJson("/api/v1/finance/home-bills/{$homeBill->id}")
             ->assertNotFound();
     }
+
+    public function test_authenticated_user_can_update_home_bill(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $homeBill = HomeBill::create([
+            'usuario_id' => $user->id,
+            'tipo' => 'agua',
+            'descricao' => 'Conta de agua',
+            'fornecedor_nome' => 'Fornecedor antigo',
+            'valor' => '98.75',
+            'data_vencimento' => '2026-06-20',
+        ]);
+
+        $this->patchJson("/api/v1/finance/home-bills/{$homeBill->id}", [
+            'tipo' => 'luz',
+            'descricao' => 'Conta de luz atualizada',
+            'fornecedor_nome' => 'Energia CFP',
+            'valor' => '185.30',
+            'data_vencimento' => '2026-06-25',
+            'situacao' => 'paid',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.tipo', 'luz')
+            ->assertJsonPath('data.descricao', 'Conta de luz atualizada')
+            ->assertJsonPath('data.fornecedor_nome', 'Energia CFP')
+            ->assertJsonPath('data.valor', '185.30')
+            ->assertJsonPath('data.situacao', 'paid');
+
+        $this->assertDatabaseHas('contas_casa', [
+            'id' => $homeBill->id,
+            'usuario_id' => $user->id,
+            'tipo' => 'luz',
+            'descricao' => 'Conta de luz atualizada',
+            'fornecedor_nome' => 'Energia CFP',
+            'valor' => '185.30',
+            'situacao' => 'paid',
+        ]);
+    }
+
+    public function test_authenticated_user_can_delete_home_bill(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+
+        $homeBill = HomeBill::create([
+            'usuario_id' => $user->id,
+            'tipo' => 'telefone',
+            'descricao' => 'Telefone fixo',
+            'valor' => '80.00',
+            'data_vencimento' => '2026-06-25',
+        ]);
+
+        $this->deleteJson("/api/v1/finance/home-bills/{$homeBill->id}")
+            ->assertNoContent();
+
+        $this->assertSoftDeleted('contas_casa', [
+            'id' => $homeBill->id,
+            'usuario_id' => $user->id,
+        ], deletedAtColumn: 'excluido_em');
+    }
+
+    public function test_user_cannot_update_or_delete_home_bill_from_another_user(): void
+    {
+        $owner = User::factory()->create();
+        Sanctum::actingAs(User::factory()->create());
+
+        $homeBill = HomeBill::create([
+            'usuario_id' => $owner->id,
+            'tipo' => 'agua',
+            'descricao' => 'Conta protegida',
+            'valor' => '120.00',
+            'data_vencimento' => '2026-06-25',
+        ]);
+
+        $this->patchJson("/api/v1/finance/home-bills/{$homeBill->id}", [
+            'descricao' => 'Tentativa de edicao',
+        ])
+            ->assertNotFound();
+
+        $this->deleteJson("/api/v1/finance/home-bills/{$homeBill->id}")
+            ->assertNotFound();
+
+        $this->assertDatabaseHas('contas_casa', [
+            'id' => $homeBill->id,
+            'descricao' => 'Conta protegida',
+            'excluido_em' => null,
+        ]);
+    }
 }

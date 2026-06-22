@@ -2,9 +2,9 @@
 
 ## Objetivo
 
-Construir um backend em Laravel moderno, com PostgreSQL e Docker, para controle financeiro pessoal e acompanhamento de Bitcoin por usuário nas seguintes áreas:
+Construir um backend em Laravel moderno, com PostgreSQL e Docker, para controle financeiro pessoal e acompanhamento de ativos financeiros por usuário nas seguintes áreas:
 
-- Dashboard BTC
+- Dashboard
 - Análises
 - Finanças Pessoais
 - Configurações
