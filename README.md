@@ -103,9 +103,9 @@ GET    /api/v1/me
 PATCH  /api/v1/me
 GET    /api/v1/users
 PATCH  /api/v1/users/{user}/profile
-GET    /api/v1/finance/summary
+GET    /api/v1/finance/summary?mes=YYYY-MM
 GET    /api/v1/finance/dashboard?mes=YYYY-MM
-GET    /api/v1/finance/current-week-due-dates
+GET    /api/v1/finance/current-week-due-dates?mes=YYYY-MM
 GET    /api/v1/finance/receitas-mensais
 POST   /api/v1/finance/receitas-mensais
 GET    /api/v1/finance/receitas-mensais/{monthlyIncome}

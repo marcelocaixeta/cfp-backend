@@ -11,14 +11,24 @@ class CurrentWeekDueDateController extends Controller
 {
     public function __invoke(Request $request): JsonResponse
     {
+        $data = $request->validate([
+            'mes' => ['sometimes', 'date_format:Y-m'],
+        ]);
+
         $timezone = config('app.timezone', 'UTC');
-        $startOfWeek = CarbonImmutable::now($timezone)->startOfWeek()->startOfDay();
-        $endOfWeek = $startOfWeek->endOfWeek()->endOfDay();
+        if (isset($data['mes'])) {
+            $month = CarbonImmutable::createFromFormat('Y-m', $data['mes'], $timezone)->startOfMonth();
+            $periodStart = $month->startOfMonth()->startOfDay();
+            $periodEnd = $month->endOfMonth()->endOfDay();
+        } else {
+            $periodStart = CarbonImmutable::now($timezone)->startOfWeek()->startOfDay();
+            $periodEnd = $periodStart->endOfWeek()->endOfDay();
+        }
         $user = $request->user();
 
         $debts = $user->creditCardDebts()
             ->with('creditCard:id,nome')
-            ->whereBetween('primeira_data_vencimento', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
+            ->whereBetween('primeira_data_vencimento', [$periodStart->toDateString(), $periodEnd->toDateString()])
             ->whereIn('situacao', ['pending', 'overdue'])
             ->orderBy('primeira_data_vencimento')
             ->orderBy('id')
@@ -41,7 +51,7 @@ class CurrentWeekDueDateController extends Controller
 
         $loanInstallments = $user->loanInstallments()
             ->with('loan:id,credor_nome,descricao')
-            ->whereBetween('data_vencimento', [$startOfWeek->toDateString(), $endOfWeek->toDateString()])
+            ->whereBetween('data_vencimento', [$periodStart->toDateString(), $periodEnd->toDateString()])
             ->whereIn('situacao', ['pending', 'overdue'])
             ->orderBy('data_vencimento')
             ->orderBy('id')
@@ -58,18 +68,40 @@ class CurrentWeekDueDateController extends Controller
                 'situacao' => $installment->situacao,
             ]);
 
+        $homeBills = $user->homeBills()
+            ->whereBetween('data_vencimento', [$periodStart->toDateString(), $periodEnd->toDateString()])
+            ->whereIn('situacao', ['pending', 'overdue'])
+            ->orderBy('data_vencimento')
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($homeBill): array => [
+                'id' => $homeBill->id,
+                'tipo' => 'conta_casa',
+                'tipo_conta' => $homeBill->tipo,
+                'fornecedor_nome' => $homeBill->fornecedor_nome,
+                'descricao' => $homeBill->descricao,
+                'data_vencimento' => $homeBill->data_vencimento->toDateString(),
+                'valor' => (string) $homeBill->valor,
+                'situacao' => $homeBill->situacao,
+            ]);
+
         return response()->json([
             'data' => [
                 'periodo' => [
-                    'inicio' => $startOfWeek->toDateString(),
-                    'fim' => $endOfWeek->toDateString(),
+                    'inicio' => $periodStart->toDateString(),
+                    'fim' => $periodEnd->toDateString(),
                 ],
                 'dividas_cartao_credito' => $debts,
+                'contas_casa' => $homeBills,
                 'parcelas_emprestimos' => $loanInstallments,
                 'totais' => [
                     'dividas_cartao_credito' => [
                         'count' => $debts->count(),
                         'valor' => (string) $debts->sum(fn (array $debt): float => (float) $debt['valor']),
+                    ],
+                    'contas_casa' => [
+                        'count' => $homeBills->count(),
+                        'valor' => (string) $homeBills->sum(fn (array $homeBill): float => (float) $homeBill['valor']),
                     ],
                     'parcelas_emprestimos' => [
                         'count' => $loanInstallments->count(),

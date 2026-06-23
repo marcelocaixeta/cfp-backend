@@ -241,9 +241,9 @@ Entidades principais:
 Endpoints iniciais:
 
 ```text
-GET    /api/v1/finance/summary
+GET    /api/v1/finance/summary?mes=YYYY-MM
 GET    /api/v1/finance/dashboard?mes=YYYY-MM
-GET    /api/v1/finance/current-week-due-dates
+GET    /api/v1/finance/current-week-due-dates?mes=YYYY-MM
 
 GET    /api/v1/finance/income
 POST   /api/v1/finance/income
