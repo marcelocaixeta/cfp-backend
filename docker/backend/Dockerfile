@@ -1,4 +1,4 @@
-FROM php:8.5-cli-alpine
+FROM php:8.5.12-cli-alpine
 
 RUN apk add --no-cache \
     bash \
@@ -11,5 +11,7 @@ RUN apk add --no-cache \
     && docker-php-ext-install intl mbstring pdo pdo_pgsql
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+COPY docker/backend/php.ini /usr/local/etc/php/conf.d/zz-hardening.ini
 
 WORKDIR /var/www/html
